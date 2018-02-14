@@ -5,13 +5,12 @@ Proposed base class for TransformativeMed web components. The objectives of the 
 * Provide a common structure and organization for child components to follow.
 * Reduce repetitive 'boiler plate' code contained in the child components.
 * Encourage adoption of best practices and functionality of modern JS development and frameworks:
-  * Templating
-  * One-way data binding
-  * State management
-  * Elimination of explicit DOM manipulations
-  * Dependency injection (to-do)
-  * Unit testing intergation (to-do)
-
+ * Templating
+ * One-way data binding
+ * State management
+ * Elimination of explicit DOM manipulations
+ * Dependency injection (to-do)
+ * Unit testing intergation (to-do)
 * Reduce level of effort required by non-author devs to understand and maintain components.
 * Allow for easy re-factors of the legacy jQuery-heavy TransformativeMed code base.
 
