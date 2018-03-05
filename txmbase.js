@@ -293,13 +293,20 @@ var TXMBase = (function() {
 				// if it does match any data bindings, then we will need to update the appropriate portions of the rendered component.
 				var i = changes.length;
 				while (i--) {
-					
+					console.log(changes[i].currentPath);
 					// loop over each ui binding and see if any of the changes qualify to trigger a refresh
 					for (var uiBinding in self.uiBindings) {
 						
+						// check if the user passed in a regular expression
+						var regExpBinding = false;
+						if (uiBinding.charAt(0) === "/" && uiBinding.charAt(uiBinding.length-1) === "/") {
+							// if it is a regular expression, then test it against the current path
+							var regExpBinding = (new RegExp(uiBinding.substring(1, uiBinding.length-1))).test(changes[i].currentPath);
+						}
+						
 						// if we're not already refreshing the entire component and the recent change was made to a data property 
 						// that we've bound, then we need to go update the appropriate portion of the UI.
-						if (self.refreshList !== true && uiBinding == changes[i].currentPath) {
+						if (self.refreshList !== true && (uiBinding == changes[i].currentPath || regExpBinding)) {
 							
 							// if the data binding is simply set to 'true', then that means the entire component must be refreshed.
 							if (self.uiBindings[uiBinding] === true) {
@@ -314,8 +321,15 @@ var TXMBase = (function() {
 					// loop over each data binding and see if any of the changes qualify to trigger a data request
 					for (var dataBinding in self.dataBindings) {
 						
+						// check if the user passed in a regular expression
+						var regExpBinding = false;
+						if (dataBinding.charAt(0) === "/" && dataBinding.charAt(dataBinding.length-1) === "/") {
+							// if it is a regular expression, then test it against the current path
+							var regExpBinding = (new RegExp(dataBinding.substring(1,dataBinding.length-1))).test(changes[i].currentPath);
+						}
+						
 						// if the recent change was made to a data property that we've bound, then we need to go update the appropriate portion of the UI.
-						if (dataBinding == changes[i].currentPath) {
+						if (dataBinding == changes[i].currentPath || regExpBinding) {
 
 							// check if this data binding requires us to delay refreshing the page
 							if (self.dataBindings[dataBinding].delayRefresh == true) delayRefresh = true;
