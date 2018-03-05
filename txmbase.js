@@ -293,7 +293,7 @@ var TXMBase = (function() {
 				// if it does match any data bindings, then we will need to update the appropriate portions of the rendered component.
 				var i = changes.length;
 				while (i--) {
-					console.log(changes[i].currentPath);
+					
 					// loop over each ui binding and see if any of the changes qualify to trigger a refresh
 					for (var uiBinding in self.uiBindings) {
 						
