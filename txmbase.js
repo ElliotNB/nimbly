@@ -93,6 +93,27 @@ var TXMBase = (function() {
 	
 	var baseClassInstance = 0;
 	
+	// The queueRefresh function is used for queueing up refreshes of all components on the page and triggering them in batches
+	// in order to avoid the unnecessary page re-draws that would occur if we updated the DOM immediately when a component refresh
+	// is invoked
+	var refreshQueue = [];
+	var uniqueIndex = [];
+	var queueRefresh = function(refreshData) {
+		if (refreshQueue.indexOf(refreshData.instanceId) == -1) {
+			uniqueIndex.push(refreshData.instanceId);
+			refreshQueue.push(refreshData.refresh)
+		}
+		
+		var refreshCount = refreshQueue.length;
+		setTimeout(function() {
+			if (refreshCount == refreshQueue.length) {
+				var i = refreshQueue.length;
+				while (i--) refreshQueue.pop()();
+				uniqueIndex.length = 0;
+			}
+		},10);
+	};
+	
 	/* 	Function: _getTemplate(templateElmtId)
 			Simple utility function for retrieving our Mustache templates
 	
@@ -174,13 +195,23 @@ var TXMBase = (function() {
 		*/
 		this.initPending = false;
 		
+		/*	Property: this.initRendered
+			Boolean, set to true when the component has fully rendered. This property is important for determining whether
+			or not a child component needs to be re-rendered (refreshed) when a parent component is refreshed.
+		*/
+		this.initRendered = false;
+		
 		/*	Property: this.delayRefresh
 				Boolean, set to true when there are one or more data requests in progress and we should not refresh the UI until they are all complete.
 				Helps us avoid a situation where a UI refresh is processed immediately before a fetch method completes which would generate a UI refresh of its own.
 		*/
 		this.delayRefresh = false;
 		
-		this.excludeRefresh = false;
+		/*	Property: this._excludeRefresh
+				Boolean, this property is used to track whether or not a child component should refresh when a parent component is updated. A parent component
+				may refresh all or just part of itself. A child component may or may not be contained within the area to be refreshed.
+		*/
+		this._excludeRefresh = false;
 		
 		/*	Property: this.childComponents
 				Array, if the .render() method initializes and renders other components, then those child components should be added to this array.
@@ -276,7 +307,7 @@ var TXMBase = (function() {
 				Note for IE11 users: all properties must be defined at the time of initialization else their changes will not be observed.
 		*/
 		this.data = ObservableSlim.create(this._data, true, function(changes) { 
-		
+			
 			// we don't process any changes until the component has marked itself as initialized, this prevents
 			// a problem where the instantiation of the base class and passing in default this.data values triggers a change
 			// and refresh before anything has even loaded
@@ -343,7 +374,10 @@ var TXMBase = (function() {
 				
 				// fire off methods to retrieve more data (if needed) and refresh the component (if needed)
 			  	self._fetch(delayRefresh, fetchList);
-				self.refresh();
+				queueRefresh({
+					"instanceId": self.baseClassInstance
+					,"refresh":function() { self.refresh();}
+				});
 			};
 		});
 		
@@ -426,7 +460,10 @@ var TXMBase = (function() {
 					self.initialized = true;
 					self.initPending = false;
 					self.refreshList = true;
-					self.refresh();
+					queueRefresh({
+						"instanceId": self.baseClassInstance
+						,"refresh":function() { self.refresh();}
+					});
 				},50);
 				
 				// if the child class supplied a custom follow up initialization method, then invoke it
@@ -507,7 +544,12 @@ var TXMBase = (function() {
 			if (loadMask == true) self.hideLoadMask();
 			
 			// if there are pending UI updates (possibly triggered by these fetches), then kick off the refresh process
-			if (self.refreshList == true || self.refreshList.length > 0) self.refresh();
+			if (self.refreshList == true || self.refreshList.length > 0) {
+				queueRefresh({
+					"instanceId": self.baseClassInstance
+					,"refresh":function() { self.refresh();}
+				});
+			}
 			
 		}).catch(function(failedPromise) {console.error(failedPromise);});		
 	
@@ -523,7 +565,7 @@ var TXMBase = (function() {
 	 */
 	constructor.prototype.render = function() {
 		
-		if (this.excludeRefresh === false) {
+		if (this._excludeRefresh === false) {
 			// if the component hasn't been initialized and there's no initialization in-progress, 
 			// then we need to initialize it before attempting a render
 			if (this.initialized == false && this.initPending == false) this.init();			
@@ -535,7 +577,18 @@ var TXMBase = (function() {
 			
 			// else the component is initialized and ready for the standard render
 			} else {
-				var jqDom = this._render();
+				// if the component does not have any pending changes and it has already been fully rendered once
+				// then we don't need to re-render this component, we can just return what has already been rendered
+				if (this.refreshList instanceof Array && this.refreshList.length == 0 && this.initRendered == true) {
+					var jqDom = this.jqDom;
+				
+				// else the component does have pending changes or has not been fully rendered yet -- so we must invoke the normal .render() method.
+				} else {
+					var jqDom = this._render();
+					
+					// the component has now been fully rendered, so mark the initial render boolean as true
+					this.initRendered = true;
+				}
 			}
 		
 			this.jqDom = jqDom;
@@ -595,7 +648,7 @@ var TXMBase = (function() {
 					while (a--) {
 					
 						// by default, the component will not be part of the refresh, it will not execute ._render() and it will not update .jqDom
-						this.childComponents[a].excludeRefresh = true;
+						this.childComponents[a]._excludeRefresh = true;
 						
 						// loop over each selector a part of this refresh list -- tells us which parts of the component DOM will be updated
 						var b = this.refreshList.length;
@@ -605,7 +658,7 @@ var TXMBase = (function() {
 							// if the child component is contained within the portion of the parent component that will be updated
 							// then that child component *should* be included in the refresh
 							if (jqWillBeUpdated.length > 0 && jqWillBeUpdated[0].contains(this.childComponents[a].jqDom[0])) {
-								this.childComponents[a].excludeRefresh = false;
+								this.childComponents[a]._excludeRefresh = false;
 								break;
 							}
 						}
@@ -631,7 +684,7 @@ var TXMBase = (function() {
 					
 					// reset all components back to the default -- that they are refreshed when the parent component is refreshed
 					var i = this.childComponents.length;
-					while (i--) this.childComponents[i].excludeRefresh = false;
+					while (i--) this.childComponents[i]._excludeRefresh = false;
 					
 					// component has been refreshed, so we can reset the pending list of refresh changes
 					this.refreshList = [];

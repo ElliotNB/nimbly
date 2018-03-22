@@ -25,7 +25,7 @@ While not explicitly required by the TXMBase, **[Mustache.js](https://github.com
 
 ## Sample Usage
 
-To see a live working example of a component built with TXMBase, please visit the **[Hello World component jsFiddle](https://jsfiddle.net/qz55k4az/11/)**.
+To see a live working example of a component built with TXMBase, please visit the **[Hello World component jsFiddle](https://jsfiddle.net/qz55k4az/13/)**.
 
 The code for the above jsFiddle is as follows:
 
@@ -61,13 +61,13 @@ var HelloWorld = (function() {
 
 	// declare the default definition for this component
 	var defaults = {
-  	// what templates will this component use
+		// what templates will this component use
 		"templates":["t4m_template_1"]
     
-    // if this component needs to display a loading message or a loading spinner, specify that template here
+		// if this component needs to display a loading message or a loading spinner, specify that template here
 		,"loadingTemplate":null
     
-    // what _fetch* methods do we need to execute when this component is instantiated?
+		// what _fetch* methods do we need to execute when this component is instantiated?
 		,"initList":[
     		{
       			"method":"_fetchPatient"
@@ -75,9 +75,9 @@ var HelloWorld = (function() {
       		}
        	]
     
-    // define what changes to this.data.* should trigger what portions of the component to update.
-    // in the example below, a change to this.data.user_name would trigger a refresh 
-    // of <div class="hello_user_container">...</div>
+		// define what changes to this.data.* should trigger what portions of the component to update.
+		// in the example below, a change to this.data.user_name would trigger a refresh 
+		// of <div class="hello_user_container">...</div>
 		,"uiBindings":{
 				"user_name":[".hello_user_container"]
         		,"patient_name":[".patient_data_container"]
@@ -85,39 +85,40 @@ var HelloWorld = (function() {
        	 		,"birth_date":[".patient_data_container"]
 		}
     
-    // define what changes to this.data.* should trigger what _fetch* methods. when the _fetch* method(s)
-    // return, they will store new data on this.data which could trigger UI updates if there's a matching
-    // uiBinding entry above. delay_refresh:true tells the framework that we don't want to update the UI
-    // while one or more fetch methods are still in progress. this prevents UI updates from triggering in rapid
-    // succession if multiple _fetch* methods are invoked
+		// define what changes to this.data.* should trigger what _fetch* methods. when the _fetch* method(s)
+		// return, they will store new data on this.data which could trigger UI updates if there's a matching
+		// uiBinding entry above. delay_refresh:true tells the framework that we don't want to update the UI
+		// while one or more fetch methods are still in progress. this prevents UI updates from triggering in rapid
+		// succession if multiple _fetch* methods are invoked
 		,"dataBindings":{
 			"person_id":{
       			"delay_refresh":true	
 				,"methods":["_fetchNewPatient"]
 			} 
 		}
-    // this is the default data passed into the component. often times this data is just null because it
-    // must first be populated by the _fetch* methods defined in the initList above.
+		
+		// this is the default data passed into the component. often times this data is just null because it
+		// must first be populated by the _fetch* methods defined in the initList above.
 		,"data":{
 			"user_name":""
       		,"person_id":3453456
       		,"patient_name":null
      		,"birth_date":null
       		,"admit_date":null
-    }
+		}
     
-    // if set to true, then we do not fire off the _fetch* methods defined in the initList automatically
-    // when the component is initialized -- we would have do it manually at a later time using the this.init() method.
+		// if set to true, then we do not fire off the _fetch* methods defined in the initList automatically
+		// when the component is initialized -- we would have do it manually at a later time using the this.init() method.
 		,"delayInit":false
 	};
 
-	var constructor = function(options) {
+	var constructor = function(data, options) {
   
-  	// overwrite the defaults with any options that were manually passed into the constructor
-	 	var options = $.extend(true, defaults, options);
-    
-		// invoke the base class constructor
-		TXMBase.call(this,"T4MHelloWorld",options);
+		if (typeof data == "undefined") var data = {};
+		if (typeof options == "undefined") var options = {};
+
+        // invoke the base class constructor
+		TXMBase.call(this,"T4MHelloWorld", defaults, data, options);
 		
 	};
 	
@@ -126,20 +127,20 @@ var HelloWorld = (function() {
 	constructor.prototype.constructor = constructor;
 	
 	// the render method is the only place where the UI for the component is generated. no other portion
-  // of the component is allowed to modify the display or make any manual DOM manipulations. this gives
-  // non-author devs a single place to inspect when they want to understand the display logic and figure
-  // out why a component looks the way it does
+	// of the component is allowed to modify the display or make any manual DOM manipulations. this gives
+	// non-author devs a single place to inspect when they want to understand the display logic and figure
+	// out why a component looks the way it does
 	constructor.prototype._render = function() {
 		
 		var self = this;
 		
 		var tplData = {
-    	"have_name":(this.data.user_name.length > 0 ? true : false)
-      ,"user_name":this.data.user_name
-      ,"patient_name":this.data.patient_name
-      ,"birth_date":this.data.birth_date
-      ,"admit_date":this.data.admit_date
-    };
+			"have_name":(this.data.user_name.length > 0 ? true : false)
+			,"user_name":this.data.user_name
+			,"patient_name":this.data.patient_name
+			,"birth_date":this.data.birth_date
+			,"admit_date":this.data.admit_date
+		};
 
 		// render using the first template defined by our component
 		var jqDom = $(Mustache.render(this.templates["t4m_template_1"], tplData));
@@ -173,16 +174,18 @@ var HelloWorld = (function() {
   // because _fetchPatient is listed in the "initList" above so this fetch method gets executed when the component
   // is initialized. we're using the jsfiddle echo request -- it simply echos back the data in the URI
   constructor.prototype._fetchPatient = function(resolve, reject) {
-  	var self = this;
-    $.ajax({
+  	
+	var self = this;
+    
+	$.ajax({
         url:'/echo/js/?js={"patient_name":"Charlie Smith","birth_date":"August 9th, 1987","admit_date":"January 1st, 2018"}',
         dataType:"json",
         success: function (response) {
         
-        		// at this point we've successfully retrieved the patient data. now we need to store the patient data
+        	// at this point we've successfully retrieved the patient data. now we need to store the patient data
             // on the component by updating this.data. when we make these updates to this.data, it will trigger
             // uiBindings that will refresh the appropriate parts of the component with the patient info
-        		self.data.patient_name = response.patient_name;
+        	self.data.patient_name = response.patient_name;
             self.data.birth_date = response.birth_date;
             self.data.admit_date = response.admit_date;
             resolve();
