@@ -213,6 +213,8 @@ var TXMBase = (function() {
 		*/
 		this._excludeRefresh = false;
 		
+		this._cleanUpChildren = null;
+		
 		/*	Property: this.childComponents
 				Array, if the .render() method initializes and renders other components, then those child components should be added to this array.
 				Tracking the child components here enables this base class to clean up and delete any orphaned components after a .refresh() occurs.
@@ -306,7 +308,7 @@ var TXMBase = (function() {
 					
 				Note for IE11 users: all properties must be defined at the time of initialization else their changes will not be observed.
 		*/
-		this.data = ObservableSlim.create(this._data, true, function(changes) { 
+		this.data = ObservableSlim.create(this._data, false, function(changes) { 
 			
 			// we don't process any changes until the component has marked itself as initialized, this prevents
 			// a problem where the instantiation of the base class and passing in default this.data values triggers a change
@@ -706,16 +708,24 @@ var TXMBase = (function() {
 				// since we've just refreshed our component, it's possible that our component could have instantiated
 				// new child components in its .render() method. if that has happened, then we need to see if those components
 				// are now part of our component's DOM or if they are just sitting orphaned in the virtual DOM. If they are orphaned
-				// and not in use, then we need to clean them up. that's what we do here:
-				var i = this.childComponents.length;
-				while (i--) {
-					// if the child component wasn't rendered or if it was rendered but is no longer contained within the parent component
-					// then we need to destroy it to reduce memory usage
-					if (this.childComponents[i].jqDom === null || !this.jqDom[0].contains(this.childComponents[i].jqDom[0])) {
-						this.childComponents[i].destroy();
-						this.childComponents.splice(i,1);
+				// and not in use, then we need to clean them up. that's what we do here. we execute it on a delayed settimeout so the clean-up
+				// does not block the UI and extend the amount of time before the page updates are displayed
+			 	this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
+				var cleanUpTime = this._cleanUpChildren;
+				setTimeout(function() {
+					// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
+					if (cleanUpTime == self._cleanUpChildren) {
+						var i = self.childComponents.length;
+						while (i--) {
+							// if the child component wasn't rendered or if it was rendered but is no longer contained within the parent component
+							// then we need to destroy it to reduce memory usage
+							if (self.childComponents[i].jqDom === null || !self.jqDom[0].contains(self.childComponents[i].jqDom[0])) {
+								self.childComponents[i].destroy();
+								self.childComponents.splice(i,1);
+							}
+						}
 					}
-				}	
+				},7000);
 			}
 		}
 	};
