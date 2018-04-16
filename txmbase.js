@@ -1,3 +1,11 @@
+if (typeof module === "undefined") {
+	window["TXMBase"] = TXMBase(document,$,Mustache,ObservableSlim);
+} else {
+	module.exports = function(document,$,Mustache,ObservableSlim) {
+		return TXMBase(document,$,Mustache,ObservableSlim);
+	};
+}
+
 /*	Class: TXMBase
 		
 		Proposed base class for TransformativeMed web components. The objectives of the base class are as follows:
@@ -89,7 +97,12 @@
 		
 		options - Object, optional, overrides the defaults by merging on top of it.
 */
-var TXMBase = (function() {
+var TXMBase = function(document,$,Mustache,ObservableSlim) {
+	
+	if (typeof document === "undefined") throw new Error("TXMBase requires a document.");
+	if (typeof $ === "undefined") throw new Error("TXMBase requires jQuery 1.9+.");
+	if (typeof Mustache === "undefined") throw new Error("TXMBase requires Mustache.");
+	if (typeof ObservableSlim === "undefined") throw new Error("TXMBase requires ObservableSlim 0.0.2+.");
 	
 	var baseClassInstance = 0;
 	
@@ -190,10 +203,20 @@ var TXMBase = (function() {
 		*/
 		this.hideLoadMask = this.options.hideLoadMask || function() { return null; }
 		
-		/*	Property: this.initPending
+		/*	Property: this.pendingInit
 				Boolean, set to true when this.init() is still actively processing.
 		*/
-		this.initPending = false;
+		this.pendingInit = false;
+		
+		/*	Property: this.pendingRefresh
+				Boolean, set to true when the component has queued up or is actively processed a refresh of part of all of the component display.
+		*/
+		this.pendingRefresh = false;
+		
+		/*	Property: this.pendingFetch
+				Boolean, set to true when the component is actively retrieving (or has queued up) one or more fetch methods (e.g., ajax request for data).
+		*/
+		this.pendingFetch = false;
 		
 		/*	Property: this.initRendered
 			Boolean, set to true when the component has fully rendered. This property is important for determining whether
@@ -227,11 +250,11 @@ var TXMBase = (function() {
 		*/
 		this.templates = {};
 		
-		/*	Property: this.refreshList
+		/*	Property: this._refreshList
 				Array or boolean, used to store CSS selectors for the portions of the component that must be updated given the recent data change. If set
 				to true (boolean), then that implies the entire component needs to be refreshed.
 		*/
-		this.refreshList = [];
+		this._refreshList = [];
 		
 		// if no templates were provided, throw an error because we can't continue without something to render.
 		if (this.options.templates.length == 0) {
@@ -339,14 +362,14 @@ var TXMBase = (function() {
 						
 						// if we're not already refreshing the entire component and the recent change was made to a data property 
 						// that we've bound, then we need to go update the appropriate portion of the UI.
-						if (self.refreshList !== true && (uiBinding == changes[i].currentPath || regExpBinding)) {
+						if (self._refreshList !== true && (uiBinding == changes[i].currentPath || regExpBinding)) {
 							
 							// if the data binding is simply set to 'true', then that means the entire component must be refreshed.
 							if (self.uiBindings[uiBinding] === true) {
-								self.refreshList = true;						
+								self._refreshList = true;						
 							// else add the CSS selectors from the data binding to the full list of CSS selectors that we'll be refreshing
 							} else {
-								self.refreshList = self.refreshList.concat(self.uiBindings[uiBinding]);
+								self._refreshList = self._refreshList.concat(self.uiBindings[uiBinding]);
 							}
 						}
 					}
@@ -376,10 +399,15 @@ var TXMBase = (function() {
 				
 				// fire off methods to retrieve more data (if needed) and refresh the component (if needed)
 			  	self._fetch(delayRefresh, fetchList);
-				queueRefresh({
-					"instanceId": self.baseClassInstance
-					,"refresh":function() { self.refresh();}
-				});
+				
+				// if we have a list of changes to process or if the whole component needs to be refreshed, then queue up the refresh
+				if (self._refreshList === true || self._refreshList.length > 0) {
+					self.pendingRefresh = true;
+					queueRefresh({
+						"instanceId": self.baseClassInstance
+						,"refresh":function() { self.refresh();}
+					});
+				}
 			};
 		});
 		
@@ -455,18 +483,19 @@ var TXMBase = (function() {
 		// if there are promises that must resolve before the component renders, then we need to start them and mark the initialization as pending
 		if (listActivePromises.length > 0) {
 		
-			this.initPending = true;
+			this.pendingInit = true;
 			// Create a Promise all that resolves when all of the promises resolve
 			Promise.all(listActivePromises).then(function() { 
-				setTimeout(function() {
+//				setTimeout(function() {
 					self.initialized = true;
-					self.initPending = false;
-					self.refreshList = true;
+					self.pendingInit = false;
+					self._refreshList = true;
+					self.pendingRefresh = true;
 					queueRefresh({
 						"instanceId": self.baseClassInstance
 						,"refresh":function() { self.refresh();}
 					});
-				},50);
+//				},50);
 				
 				// if the child class supplied a custom follow up initialization method, then invoke it
 				if (typeof(self._init) == "function") self._init();
@@ -511,6 +540,8 @@ var TXMBase = (function() {
 			loadMask = true;
 		}
 		
+		if (fetchList.length > 0) this.pendingFetch = true;
+		
 		var listPromises = [];
 		
 		// loop over each fetch method passed into this method
@@ -546,12 +577,15 @@ var TXMBase = (function() {
 			if (loadMask == true) self.hideLoadMask();
 			
 			// if there are pending UI updates (possibly triggered by these fetches), then kick off the refresh process
-			if (self.refreshList == true || self.refreshList.length > 0) {
+			if (self._refreshList == true || self._refreshList.length > 0) {
+				self.pendingRefresh = true;
 				queueRefresh({
 					"instanceId": self.baseClassInstance
 					,"refresh":function() { self.refresh();}
 				});
 			}
+			
+			self.pendingFetch = false;
 			
 		}).catch(function(failedPromise) {console.error(failedPromise);});		
 	
@@ -570,10 +604,10 @@ var TXMBase = (function() {
 		if (this._excludeRefresh === false) {
 			// if the component hasn't been initialized and there's no initialization in-progress, 
 			// then we need to initialize it before attempting a render
-			if (this.initialized == false && this.initPending == false) this.init();			
+			if (this.initialized == false && this.pendingInit == false) this.init();			
 			
 			// if the initialization is in progress, then render the 'loading' display
-			if (this.initialized == false && this.initPending == true) {
+			if (this.initialized == false && this.pendingInit == true) {
 
 				var jqDom = $(Mustache.render(this.loadingTemplate, null));
 			
@@ -581,7 +615,7 @@ var TXMBase = (function() {
 			} else {
 				// if the component does not have any pending changes and it has already been fully rendered once
 				// then we don't need to re-render this component, we can just return what has already been rendered
-				if (this.refreshList instanceof Array && this.refreshList.length == 0 && this.initRendered == true) {
+				if (this._refreshList instanceof Array && this._refreshList.length == 0 && this.initRendered == true) {
 					var jqDom = this.jqDom;
 				
 				// else the component does have pending changes or has not been fully rendered yet -- so we must invoke the normal .render() method.
@@ -638,11 +672,11 @@ var TXMBase = (function() {
 			} else {
 				
 				// if a selector was provided, then we don't need to refresh the whole component, only a portion of it
-				if (typeof this.refreshList == "object" && this.refreshList.length > 0) {
+				if (typeof this._refreshList == "object" && this._refreshList.length > 0) {
 				
 					// remove any duplicate selectors
-					this.refreshList = this.refreshList.filter(function(item, pos) {
-						return self.refreshList.indexOf(item) == pos;
+					this._refreshList = this._refreshList.filter(function(item, pos) {
+						return self._refreshList.indexOf(item) == pos;
 					});
 					
 					// loop over each child component
@@ -653,9 +687,9 @@ var TXMBase = (function() {
 						this.childComponents[a]._excludeRefresh = true;
 						
 						// loop over each selector a part of this refresh list -- tells us which parts of the component DOM will be updated
-						var b = this.refreshList.length;
+						var b = this._refreshList.length;
 						while (b--) {
-							var jqWillBeUpdated = this.jqDom.find(this.refreshList[b]);
+							var jqWillBeUpdated = this.jqDom.find(this._refreshList[b]);
 							
 							// if the child component is contained within the portion of the parent component that will be updated
 							// then that child component *should* be included in the refresh
@@ -668,11 +702,11 @@ var TXMBase = (function() {
 					
 					var jqNewPage = this._render();
 					// the render method will set this.jqDom to whatever was rendered last, so we need to set it back to the old page since we're not refreshing the whole page
-					var i = this.refreshList.length;
+					var i = this._refreshList.length;
 					while (i--) {
 						
-						var jqOld = this.jqDom.find(this.refreshList[i]);
-						var jqNew = jqNewPage.find(this.refreshList[i]);
+						var jqOld = this.jqDom.find(this._refreshList[i]);
+						var jqNew = jqNewPage.find(this._refreshList[i]);
 						
 						// selectors should uniquely identify the element to be replaced, 
 						// if there are multiple targets, the .replaceWith won't work properly so we need to throw an error
@@ -689,10 +723,10 @@ var TXMBase = (function() {
 					while (i--) this.childComponents[i]._excludeRefresh = false;
 					
 					// component has been refreshed, so we can reset the pending list of refresh changes
-					this.refreshList = [];
+					this._refreshList = [];
 					
-				// else if this.refreshList has been set to true (boolean) we must refresh the entire component
-				} else if (this.refreshList == true) {
+				// else if this._refreshList has been set to true (boolean) we must refresh the entire component
+				} else if (this._refreshList == true) {
 				
 					var jqOldPage = this.jqDom;
 					var jqNewPage = this.render();
@@ -701,7 +735,7 @@ var TXMBase = (function() {
 					this.jqDom = jqNewPage;
 					
 					// component has been refreshed, so we can reset the pending list of refresh changes
-					this.refreshList = [];
+					this._refreshList = [];
 					
 				}
 				
@@ -727,6 +761,8 @@ var TXMBase = (function() {
 					}
 				},7000);
 			}
+			
+			self.pendingRefresh = false;
 		}
 	};
 	
@@ -770,6 +806,17 @@ var TXMBase = (function() {
 		
 	};
 	
+	/*	Method: this.isReady
+			This method is used to determine if the component is both initialized and no longer procesing any display updates or fetch methods (e.g., ajax requests).
+		
+		Returns:
+			Boolean - true if the component is initliazed and no longer processing any fetch methods or display updates.
+	
+	*/
+	constructor.prototype.isReady = function() {
+		return (this.pendingRefresh === false && this.pendingFetch === false && this.pendingInit === false);
+	};
+	
 	return constructor;
 	
-})();
+};

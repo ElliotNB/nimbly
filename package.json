@@ -1,0 +1,44 @@
+{
+  "name": "txmbase",
+  "description": "TXMBase is the proposed base class for TransformativeMed web components.",
+  "version": "0.0.1",
+  "main": "txmbase.js",
+  "devDependencies": {
+    "babel-core": "6.26.0",
+    "babel-preset-es2015": "6.24.1",
+    "babel-register": "6.26.0",
+    "chai": "4.1.2",
+    "expect": "22.4.3",
+    "fs": "0.0.1-security",
+    "gulp": "3.9.0",
+    "gulp-babel": "7.0.1",
+    "gulp-mocha": "5.0.0",
+    "gulp-rename": "1.2.2",
+    "gulp-uglify": "3.0.0",
+    "gulp-useref": "3.1.5",
+    "jquery": "3.3.1",
+    "jsdom": "11.7.0",
+    "mustache": "2.3.0",
+    "observable-slim": "0.0.2",
+    "util": "0.10.3",
+    "xmlhttprequest": "1.8.0"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TransformativeMed/txmbase.git"
+  },
+  "license": "MIT",
+  "author": "ElliotNB",
+  "homepage": "https://github.com/TransformativeMed/txmbase",
+  "bugs": {
+    "url": "https://github.com/TransformativeMed/txmbase/issues"
+  },
+  "dependencies": {
+    "npm": "5.8.0"
+  }
+}

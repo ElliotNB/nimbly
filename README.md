@@ -13,8 +13,9 @@ TXMBase is the proposed base class for TransformativeMed web components. The obj
     * Unit testing intergation (to-do)
 * Reduce level of effort required by non-author devs to understand and maintain components.
 * Allow for easy re-factors of the legacy jQuery-heavy TransformativeMed code base.
+* Coordinate refreshes amongst all components to minimize page re-draws and improve the user experience.
 
-## Requirements
+# Requirements
 
 TXMBase requires the following libraries:
 
@@ -23,7 +24,7 @@ TXMBase requires the following libraries:
 
 While not explicitly required by the TXMBase, **[Mustache.js](https://github.com/janl/mustache.js/)** is typically used by all TransformativeMed components.
 
-## Parameters
+# Parameters
 
 The TXMBase constructor accepts four parameters, they are:
 
@@ -36,7 +37,7 @@ The TXMBase constructor accepts four parameters, they are:
 4. **`options`** - Object, optional, overrides the defaults by merging on top of it.
 
 
-## Properties
+# Properties
 
 All TXMBase components have the following public properties:
 
@@ -58,7 +59,9 @@ All TXMBase components have the following public properties:
 
 9. **`data`** - ES6 Proxy, serves as a proxy to the component model data (this._data) and enables the component to observe any changes that occur to the data. All modifications to component data should be made through this property.
 
-## Methods
+# Methods
+
+## Public
 
 All TXMBase components have the following public methods:
 
@@ -71,32 +74,36 @@ All TXMBase components have the following public methods:
 	* *Parameters:* None.
 	* *Returns:* Nothing.
 	
-3. **`render`** - Renders and returns the component. The render method will first verify that the component has been initialized, if it has not been initialized, then it will invoke `this.init()`. If the initialization is already in progress, then it will return a temporary 'loading' display. If the component has already been initialized, then the standard render method `this._render()` is invoked.
+3. **`render()`** - Renders and returns the component. The render method will first verify that the component has been initialized, if it has not been initialized, then it will invoke `this.init()`. If the initialization is already in progress, then it will return a temporary 'loading' display. If the component has already been initialized, then the standard render method `this._render()` is invoked.
 	* *Parameters:* None.
 	* *Returns:* jQuery-referenced DocumentFragment, the component ready to be inserted into the main DOM.
 	
-4. **`refresh`** - This method is invoked when we want to re-render the component.
+4. **`refresh()`** - This method is invoked when we want to re-render the component.
 	* *Parameters:* None.
 	* *Returns:* Nothing.
 
-5. **`registerChild(childComponent)`** - When a component nests other components within it, we refer to the original component as the "parent component" and the nested component(s) as "child component(s)". In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our .refresh() method to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
+5. **`destroy()`** - This method will remove this.jqDom from the DOM and delete the observable that was created during initialization. If the component initialized any child components, then those will be destroyed as well. This helps ensure that memory usage does not balloon after repeated refreshes and UI updates.
+	* *Parameters:* None.
+	* *Returns:* Nothing.
+
+## Protected
+
+JavaScript does not support protected methods, but the following methods are **intended** to be used as protected methods. They should not be invoked externally, but they may be invoked within component class that extends the `TXMBase` base class.
+	
+1. **`registerChild(childComponent)`** - When a component nests other components within it, we refer to the original component as the "parent component" and the nested component(s) as "child component(s)". In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our .refresh() method to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
 	* *Parameters:*
 		* `childComponent` - an instance of a component that extends this base class (TXMBase).
 	* *Returns:* Nothing.
 
-6. **`destroy`** - This method will remove this.jqDom from the DOM and delete the observable that was created during initialization. If the component initialized any child components, then those will be destroyed as well. This helps ensure that memory usage does not balloon after repeated refreshes and UI updates.
-	* *Parameters:* None.
-	* *Returns:* Nothing.
-	
-7. **`showLoadMask`** - Executed when we need to display a loading mask over the component. Loading masks are displayed when we fetch data that must be retrieved before the UI can refresh. Defined via `defaults` or `options`.
+2. **`showLoadMask()`** - Executed when we need to display a loading mask over the component. Loading masks are displayed when we fetch data that must be retrieved before the UI can refresh. Defined via `defaults` or `options`.
 	* *Parameters:* None.
 	* *Returns:* Nothing.
 
-8. **`hideLoadMask`** - Executed when we need to hide the loading mask over the component. Defined via `defaults` or `options`.
+3. **`hideLoadMask()`** - Executed when we need to hide the loading mask over the component. Defined via `defaults` or `options`.
 	* *Parameters:* None.
 	* *Returns:* Nothing.
 
-## Settings
+# Settings
 
 The `defaults` and `options` parameters are the two most significant parameters passed into the TXMBase constructor. Together they dictate how the component initializes itself, how the UI should update in response to data changes, what actions to take after data changes occur, what templates the component should use, etc.
 
@@ -157,7 +164,7 @@ The full list of component settings is as follows:
 
 9. **`delayInit`** - Boolean, optional, if set to true, then we do not fire off the _fetch* methods defined in the initList automatically when the component is initialized -- we would have do it manually at a later time using the this.init() method.
 
-## Component classes
+# Component classes
 
 `TXMBase` is a base class that cannot function by itself. It must be extended by component classes (child classes) in order to be useful.
 
@@ -177,9 +184,9 @@ Component classes have their own set of methods that interact with the base clas
 		* `reject` - Function, required, invoked if the `_fetch*` method is unsuccessful in retrieving data and updating `this.data`.
 	* *Returns:* Nothing.
 	
-## Usage
+# Usage
 
-### Sample Component
+## Sample Component
 
 To see a live working example of a component built with TXMBase, please visit the **[Hello World component jsFiddle](https://jsfiddle.net/qz55k4az/13/)**.
 
@@ -218,10 +225,7 @@ var HelloWorld = (function() {
 		"templates":["t4m_template_1"]
 		,"loadingTemplate":null
 		,"initList":[
-    		{
-      			"method":"_fetchPatient"
-        		,"preventRender":true
-      		}
+    		{"method":"_fetchPatient","preventRender":true}
 		]
 		,"uiBindings":{
 			"user_name":[".hello_user_container"]
@@ -230,10 +234,7 @@ var HelloWorld = (function() {
 			,"birth_date":[".patient_data_container"]
 		}
 		,"dataBindings":{
-			"person_id":{
-      			"delay_refresh":true	
-				,"methods":["_fetchNewPatient"]
-			} 
+			"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]} 
 		}
 		,"data":{
 			"user_name":""
@@ -368,7 +369,7 @@ var rendered = test.render();
 $("body").append(rendered);
 ```
 
-### Registering Child Components
+## Registering Child Components
 
 If your component renders and inserts other components within itself, then those child components must be explicitly registered. Typically the registration of child components is done directly in the `_render` method or `_init` method.
 
@@ -384,9 +385,9 @@ this.registerChild(this.issueList);
 
 Registering a child component will enable TXMBase to handle component refreshes without ballooning memory usage and avoid unnecessary child component re-renders.
 
-## IE11 Notes
+# IE11 Notes
 
-### Proxy polyfill restrictions
+## Proxy polyfill restrictions
 
 TXMBase relies on the Observable Slim library to observe changes to `this.data` and trigger `uiBindings` and `dataBindings`. The Observable Slim library in turn relies on ES6 `Proxy` to perform those observations. ES6 `Proxy` is supported by Chrome 49+, Edge 12+, Firefox 18+, Opera 36+ and Safari 10+, but it is not supported by IE11.
 
@@ -401,7 +402,7 @@ For IE11, the `Proxy` polyfill must be used. However, the polyfill does have lim
 1. Declare all properties on `this.data` at the time of initialization. New properties on `this.data` cannot be observed.
 2. Do not use `uiBindings` or `dataBindings` that rely a property being deleted (e.g., `delete this.data.some_property`).
 
-### Bypassing the Proxy for reads
+## Bypassing the Proxy for reads
 
 IE11 performs considerably worse than other modern browsers when iterating through very large nested objects. The performance degradation is only exacerbated with the `Proxy` polyfill, because `Proxy` intercepts both modifying object properties and reading object properties.
 

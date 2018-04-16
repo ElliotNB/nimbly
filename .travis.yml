@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "node"
+  - "8"
+before_script:
+  - npm install
+script: gulp test
+cache:
+  directories:
+    - "node_modules"
