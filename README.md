@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/TransformativeMed/txmbase.svg?token=YHpZnkxTeYHnDBM645Y8&branch=master)](https://travis-ci.com/TransformativeMed/txmbase)
+
 # Overview
 
 TXMBase is the proposed base class for TransformativeMed web components. The objectives of TXMBase are as follows:
