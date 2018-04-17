@@ -1,10 +1,3 @@
-if (typeof module === "undefined") {
-	window["HelloWorld"] = HelloWorld($,Mustache,TXMBase);
-} else {
-	module.exports = function($,Mustache,TXMBase) {
-		return HelloWorld($,Mustache,TXMBase);
-	};
-}
 var HelloWorld = function($,Mustache,TXMBase) {
 
 	var defaults = {
@@ -150,3 +143,11 @@ var HelloWorld = function($,Mustache,TXMBase) {
 	return constructor;
 
 };
+
+if (typeof module === "undefined") {
+	window["HelloWorld"] = HelloWorld($,Mustache,TXMBase);
+} else {
+	module.exports = function($,Mustache,TXMBase) {
+		return HelloWorld($,Mustache,TXMBase);
+	};
+}

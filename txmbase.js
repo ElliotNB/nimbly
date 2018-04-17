@@ -1,11 +1,3 @@
-if (typeof module === "undefined") {
-	window["TXMBase"] = TXMBase(document,$,Mustache,ObservableSlim);
-} else {
-	module.exports = function(document,$,Mustache,ObservableSlim) {
-		return TXMBase(document,$,Mustache,ObservableSlim);
-	};
-}
-
 /*	Class: TXMBase
 		
 		Proposed base class for TransformativeMed web components. The objectives of the base class are as follows:
@@ -820,3 +812,11 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 	return constructor;
 	
 };
+
+if (typeof module === "undefined") {
+	window["TXMBase"] = TXMBase(document,$,Mustache,ObservableSlim);
+} else {
+	module.exports = function(document,$,Mustache,ObservableSlim) {
+		return TXMBase(document,$,Mustache,ObservableSlim);
+	};
+}
