@@ -1,10 +1,9 @@
 var expect = require('chai').expect;
-var jsdom = require('jsdom');
+var jsdom = require('jsdom').JSDOM;
 var fs = require('fs');
 var Mustache = require('mustache');
 var ObservableSlim = require('observable-slim');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-const { JSDOM } = jsdom;
 
 // the Promise returned by this function will resolve when the component is not initliaziing, 
 // does not have any UI updates pending and is not waiting for any fetch (data retrieval) methods to return.
@@ -25,8 +24,8 @@ describe('HelloWorld component test suite.', function() {
 
 	// create a fake DOM using jsdom and the templates provided by the component
 	var htmlHelloWorld = fs.readFileSync('./sample/HelloWorld.html').toString();
-	const { window } = new JSDOM(htmlHelloWorld);
-	const { document } = window.window;
+	var window = (new jsdom(htmlHelloWorld)).window;
+	var document = window.document;
 	
 	// initialize jquery with the fake DOM we've created
 	var $ = require('jquery')(window);
