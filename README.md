@@ -386,6 +386,18 @@ this.registerChild(this.issueList);
 
 Registering a child component will enable TXMBase to handle component refreshes without ballooning memory usage and avoid unnecessary child component re-renders.
 
+### Monitoring changes on a child component from a parent component
+
+When you register a child component and pass it `this.data` or a nested object on `this.data` (e.g., `this.data.patient_list`) it is possible for the parent component to observe changes that are made to `this.data` by the child component using either `uiBindings` or `dataBindings`.
+
+However, if you pass all or part of `this.data` to a child component, it is important that you refer to it as `this.data` and do not use the `this._data` performance shortcut described below. Using the latter will prevent the parent component from observing changes made by the child component.
+
+In other words...
+
+This is good: `var issueList = new ITIssueList(this.data);`
+
+This is bad: var issueList = new ITIssueList(this._data);
+
 # IE11 Notes
 
 ## Proxy polyfill restrictions
