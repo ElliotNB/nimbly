@@ -89,9 +89,8 @@
 		
 		options - Object, optional, overrides the defaults by merging on top of it.
 */
-var TXMBase = function(document,$,Mustache,ObservableSlim) {
+var TXMBase = function($,Mustache,ObservableSlim) {
 	
-	if (typeof document === "undefined") throw new Error("TXMBase requires a document.");
 	if (typeof $ === "undefined") throw new Error("TXMBase requires jQuery 1.9+.");
 	if (typeof Mustache === "undefined") throw new Error("TXMBase requires Mustache.");
 	if (typeof ObservableSlim === "undefined") throw new Error("TXMBase requires ObservableSlim 0.0.2+.");
@@ -200,15 +199,10 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 		*/
 		this.pendingInit = false;
 		
-		/*	Property: this.pendingRefresh
-				Boolean, set to true when the component has queued up or is actively processed a refresh of part of all of the component display.
+		/*	Property: this.pendingFetchCount
+				Integer, a count of the number of unresolved and still in-progress fetch promises.
 		*/
-		this.pendingRefresh = false;
-		
-		/*	Property: this.pendingFetch
-				Boolean, set to true when the component is actively retrieving (or has queued up) one or more fetch methods (e.g., ajax request for data).
-		*/
-		this.pendingFetch = false;
+		this.pendingFetchCount = 0;
 		
 		/*	Property: this.initRendered
 			Boolean, set to true when the component has fully rendered. This property is important for determining whether
@@ -232,7 +226,7 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 		
 		/*	Property: this.childComponents
 				Array, if the .render() method initializes and renders other components, then those child components should be added to this array.
-				Tracking the child components here enables this base class to clean up and delete any orphaned components after a .refresh() occurs.
+				Tracking the child components here enables this base class to clean up and delete any orphaned components after a ._refresh() occurs.
 		*/
 		this.childComponents = [];
 		
@@ -397,7 +391,7 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 					self.pendingRefresh = true;
 					queueRefresh({
 						"instanceId": self.baseClassInstance
-						,"refresh":function() { self.refresh();}
+						,"refresh":function() { self._refresh();}
 					});
 				}
 			};
@@ -474,23 +468,26 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 		
 		// if there are promises that must resolve before the component renders, then we need to start them and mark the initialization as pending
 		if (listActivePromises.length > 0) {
-		
+			// we have one or more in-progress promises, so increment the count
+			this.pendingFetchCount++;
 			this.pendingInit = true;
 			// Create a Promise all that resolves when all of the promises resolve
 			Promise.all(listActivePromises).then(function() { 
-//				setTimeout(function() {
-					self.initialized = true;
-					self.pendingInit = false;
-					self._refreshList = true;
-					self.pendingRefresh = true;
-					queueRefresh({
-						"instanceId": self.baseClassInstance
-						,"refresh":function() { self.refresh();}
-					});
-//				},50);
+
+				self.initialized = true;
+				self.pendingInit = false;
+				self._refreshList = true;
+				self.pendingRefresh = true;
+				queueRefresh({
+					"instanceId": self.baseClassInstance
+					,"refresh":function() { self._refresh();}
+				});
 				
 				// if the child class supplied a custom follow up initialization method, then invoke it
 				if (typeof(self._init) == "function") self._init();
+				
+				// the promises have all been fulfilled so we decrement the outstanding promise count
+				self.pendingFetchCount--;
 				
 			}).catch(function(failedPromise) {console.error(failedPromise);});
 		
@@ -502,7 +499,12 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 			if (typeof(self._init) == "function") self._init();
 		}
 		
-		if (listPassivePromises.length > 0) Promise.all(listPassivePromises).catch(function(failedPromise) {console.error(failedPromise);});
+		if (listPassivePromises.length > 0) {
+			this.pendingFetchCount++;
+			Promise.all(listPassivePromises).then(function() {
+				self.pendingFetchCount--;
+			}).catch(function(failedPromise) {console.error(failedPromise);});
+		}
 	};
 	
 	/*	Method: this._fetch
@@ -532,54 +534,56 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 			loadMask = true;
 		}
 		
-		if (fetchList.length > 0) this.pendingFetch = true;
+		if (fetchList.length > 0) {
+			
+			this.pendingFetchCount++;
 		
-		var listPromises = [];
-		
-		// loop over each fetch method passed into this method
-		var i = fetchList.length;
-		while (i--) {
-			// Create a promise for the data fetch method
-			var fetchPromise = new Promise((function(i) {
-				return function(resolve, reject) { 
-					if (typeof(self[fetchList[i]]) == "function") {
-						self[fetchList[i]](resolve,reject);
-					} else {
-						throw new Error("TXMBase::_fetch cannot continue, the method "+self.className+"."+fetchList[i]+"() does not exist or is not a function.");
+			var listPromises = [];
+			
+			// loop over each fetch method passed into this method
+			var i = fetchList.length;
+			while (i--) {
+				// Create a promise for the data fetch method
+				var fetchPromise = new Promise((function(i) {
+					return function(resolve, reject) { 
+						if (typeof(self[fetchList[i]]) == "function") {
+							self[fetchList[i]](resolve,reject);
+						} else {
+							throw new Error("TXMBase::_fetch cannot continue, the method "+self.className+"."+fetchList[i]+"() does not exist or is not a function.");
+						}
 					}
+				})(i)).catch((function(i) {
+					return function(error) {
+						console.error(error);
+						throw new Error("An error occured in the "+self.className+"."+fetchList[i]+"() method.");
+					}
+				})(i));
+				
+				// add the promise to the full list of promises
+				listPromises.push(fetchPromise);
+			};	
+			
+			// Create a Promise all that resolves when all of the fetch promises resolve
+			Promise.all(listPromises).then(function() { 
+				
+				// the fetches have all completed and the component is now safe to refresh UI, so we can turn off delayRefresh
+				self.delayRefresh = false;
+				
+				// if we created a load mask earlier on, then we now need to remove it
+				if (loadMask == true) self.hideLoadMask();
+				
+				// if there are pending UI updates (possibly triggered by these fetches), then kick off the refresh process
+				if (self._refreshList == true || self._refreshList.length > 0) {
+					queueRefresh({
+						"instanceId": self.baseClassInstance
+						,"refresh":function() { self._refresh();}
+					});
 				}
-			})(i)).catch((function(i) {
-				return function(error) {
-					console.error(error);
-					throw new Error("An error occured in the "+self.className+"."+fetchList[i]+"() method.");
-				}
-			})(i));
-			
-			// add the promise to the full list of promises
-			listPromises.push(fetchPromise);
-		};	
-		
-		// Create a Promise all that resolves when all of the fetch promises resolve
-	 	Promise.all(listPromises).then(function() { 
-			
-			// the fetches have all completed and the component is now safe to refresh UI, so we can turn off delayRefresh
-			self.delayRefresh = false;
-			
-			// if we created a load mask earlier on, then we now need to remove it
-			if (loadMask == true) self.hideLoadMask();
-			
-			// if there are pending UI updates (possibly triggered by these fetches), then kick off the refresh process
-			if (self._refreshList == true || self._refreshList.length > 0) {
-				self.pendingRefresh = true;
-				queueRefresh({
-					"instanceId": self.baseClassInstance
-					,"refresh":function() { self.refresh();}
-				});
-			}
-			
-			self.pendingFetch = false;
-			
-		}).catch(function(failedPromise) {console.error(failedPromise);});		
+				
+				self.pendingFetchCount--;
+
+			}).catch(function(failedPromise) {console.error(failedPromise);});
+		}
 	
 	};
 	
@@ -634,7 +638,7 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 			The primary difference between this.render() and this._render() is that this.render() will 1. determine if the component is initalized
 			, 2. render a loading page if necessary and 3. update the this.jqDom property. this._render() does not handle any of that. It simply
 			renders the full component as it would if the component is fully initialized. It does not update this.jqDom. This distinction becomes
-			important in the this.refresh() method where sometimes we don't want to overwrite the entire this.jqDom but instead refresh portions of it.
+			important in the this._refresh() method where sometimes we don't want to overwrite the entire this.jqDom but instead refresh portions of it.
 			Finally, this.render() is a public method while this._render() is a private method -- this._render() should not be invoked externally.
 			
 		Returns:
@@ -646,11 +650,39 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 		return jqDom;	
 	};
 	
+	/*	Method: this.notifyChange
+			Simulate a fake change on this.data in order to trigger the appropriate uiBindings and dataBindings.
+	*/
+	constructor.prototype.notifyChange = function(dataObj, prop) {
+		if (typeof dataObj !== "object") {
+			throw new Error("TXMBase::notifyChange() cannot continue -- dataObj must be an object.");
+		};
+		if (typeof prop !== "string") {
+			throw new Error("TXMBase::notifyChange() cannot continue -- dataObj must be a string.");
+		};
+		
+		var origVal = dataObj[prop];
+		dataObj[prop] = null;
+		dataObj[prop] = origVal;
+	};
+	
 	/*	Method: this.refresh
-			This method is invoked when we want to re-render part or all of the component. This method is typically invoked after a new recipient or new 'regarding' entity has been added.
+			Public refresh method that is invoked when we want to manually refresh the component.
 	*/
 	constructor.prototype.refresh = function() {
+		this.pendingRefresh = true;
+		this._refreshList = true;
+		queueRefresh({
+			"instanceId": self.baseClassInstance
+			,"refresh":function() { self._refresh();}
+		});
+	};
 	
+	/*	Method: this._refresh
+			This method is invoked when we want to re-render part or all of the component. This method is typically invoked after a new recipient or new 'regarding' entity has been added.
+	*/
+	constructor.prototype._refresh = function() {
+		
 		var self = this;
 		
 		// if the component hasn't been initialized yet, then we ignore any refresh requests. a component
@@ -753,14 +785,12 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 					}
 				},7000);
 			}
-			
-			self.pendingRefresh = false;
 		}
 	};
 	
 	/*	Method: this.registerChild
 			When a component nests other components within it, we refer to the original component as the "parent component" and the nested component(s) as "child component(s)".
-			In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our .refresh() method
+			In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our ._refresh() method
 			to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
 	*/
 	constructor.prototype.registerChild = function(childComponent) {
@@ -806,7 +836,10 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 	
 	*/
 	constructor.prototype.isReady = function() {
-		return (this.pendingRefresh === false && this.pendingFetch === false && this.pendingInit === false);
+		
+		var i = this.childComponents.length;
+		while (i--) if (this.childComponents[i].isReady() === false) return false;
+		return (this._refreshList.length === 0 && this.pendingFetchCount === 0 && this.pendingInit === false);
 	};
 	
 	return constructor;
@@ -814,9 +847,9 @@ var TXMBase = function(document,$,Mustache,ObservableSlim) {
 };
 
 if (typeof module === "undefined") {
-	window["TXMBase"] = TXMBase(document,$,Mustache,ObservableSlim);
+	window["TXMBase"] = TXMBase($,Mustache,ObservableSlim);
 } else {
-	module.exports = function(document,$,Mustache,ObservableSlim) {
-		return TXMBase(document,$,Mustache,ObservableSlim);
+	module.exports = function($,Mustache,ObservableSlim) {
+		return TXMBase($,Mustache,ObservableSlim);
 	};
 }

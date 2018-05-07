@@ -25,7 +25,7 @@ describe('HelloWorld component test suite.', function() {
 	// create a fake DOM using jsdom and the templates provided by the component
 	var htmlHelloWorld = fs.readFileSync('./sample/HelloWorld.html').toString();
 	var window = (new jsdom(htmlHelloWorld)).window;
-	var document = window.document;
+	global.document = window.document;
 	
 	// initialize jquery with the fake DOM we've created
 	var $ = require('jquery')(window);
@@ -37,7 +37,7 @@ describe('HelloWorld component test suite.', function() {
 	};
 	
 	// initialize the base class and our components with all required dependencies
-	var TXMBase = require("../../txmbase.js")(document,$,Mustache,ObservableSlim);
+	var TXMBase = require("../../txmbase.js")($,Mustache,ObservableSlim);
 	var HelloWorld = require("../HelloWorld.js")($,Mustache,TXMBase);
 	var helloWorld;
 	
