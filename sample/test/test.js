@@ -37,7 +37,7 @@ describe('HelloWorld component test suite.', function() {
 	};
 	
 	// initialize the base class and our components with all required dependencies
-	var TXMBase = require("../../txmbase.js")($,Mustache,ObservableSlim);
+	var TXMBase = require("../../txmbase.js")($,Mustache,ObservableSlim,Object);
 	var HelloWorld = require("../HelloWorld.js")($,Mustache,TXMBase);
 	var helloWorld;
 	
