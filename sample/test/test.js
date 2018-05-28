@@ -23,7 +23,7 @@ describe('HelloWorld component test suite.', function() {
 	this.timeout(5000);
 
 	// create a fake DOM using jsdom and the templates provided by the component
-	var htmlHelloWorld = fs.readFileSync('./sample/HelloWorld.html').toString();
+	var htmlHelloWorld = fs.readFileSync('./sample/templates.html').toString();
 	var window = (new jsdom(htmlHelloWorld)).window;
 	global.document = window.document;
 	
@@ -38,7 +38,8 @@ describe('HelloWorld component test suite.', function() {
 	
 	// initialize the base class and our components with all required dependencies
 	var TXMBase = require("../../txmbase.js")($,Mustache,ObservableSlim,Object);
-	var HelloWorld = require("../HelloWorld.js")($,Mustache,TXMBase);
+	var PersonData = require("../PersonData.js")($,Mustache,TXMBase);
+	var HelloWorld = require("../HelloWorld.js")($,Mustache,TXMBase,PersonData);
 	var helloWorld;
 	
 	// before each test we instantiate the component and allow it to finish rendering before starting the tests
@@ -75,7 +76,6 @@ describe('HelloWorld component test suite.', function() {
 		helloWorld.jqDom.find(".load_next_patient_btn").click();
 		
 		await whenReady(helloWorld);
-		
 		var namePresent = helloWorld.jqDom.find(".patient_data_container").html().indexOf("Larry Anderson");
 		expect(namePresent).to.be.above(-1);
 		expect(helloWorld._data.patient_name).to.equal("Larry Anderson");

@@ -573,7 +573,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 						,"refresh":function() { self._refresh();}
 					});
 				}
-				
+
 				self.pendingFetchCount--;
 
 			}).catch(function(failedPromise) {console.error(failedPromise);});
@@ -742,7 +742,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				// are now part of our component's DOM or if they are just sitting orphaned in the virtual DOM. If they are orphaned
 				// and not in use, then we need to clean them up. that's what we do here. we execute it on a delayed settimeout so the clean-up
 				// does not block the UI and extend the amount of time before the page updates are displayed
- 			 	this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
+ /* 			 	this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
 				var cleanUpTime = this._cleanUpChildren;
 				setTimeout(function() {
 					// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
@@ -757,7 +757,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 							}
 						}
 					}
-				},7000);
+				},7000); */
 			}
 		}
 	};
@@ -801,11 +801,24 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		};
 	};
 	
+	/*	Method: this._eachChildComponent(callback)
+			This method is resposible for invoking a callback function for each child component registered on this component.
+		Parameters:
+			callback - function, accepts two parameters, the current section name (string) and the child component.
+	*/
 	constructor.prototype._eachChildComponent = function(callback) {
-		for (sectionName in this.childComponents) {
-			var i = this.childComponents[sectionName].length;
-			while (i--) {
-				callback(sectionName, this.childComponents[sectionName][i]);
+		
+		for (var sectionName in this.childComponents) {
+			var a = this.childComponents[sectionName].length;
+			while (a--) {
+				if (sectionName === "default") {
+					callback(sectionName, this.childComponents[sectionName][a]);
+				} else {
+					var b = this.childComponents[sectionName][a].length;
+					while (b--) {
+						callback(sectionName, this.childComponents[sectionName][a][b]);
+					}
+				}
 			}
 		}
 	};
@@ -831,12 +844,9 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		
 			// if the child component has not already been registered, then register it
 			if (this.childComponents[sectionName].indexOf(childComponent) === -1) {
-/* 				var i = this.childComponents.length;
-				while (i--) {
-					if (childComponent.options.tagName === this.childComponents[i].options.tagName) throw new Error("Component with this tag name has already been registered.");
-				} */
 				this.childComponents[sectionName].push(childComponent);
 			}
+			
 //		}
 	};
 	
@@ -871,14 +881,11 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 	
 	*/
 	constructor.prototype.isReady = function() {
-		
 		var allChildrenReady = true;
-		
 		this._eachChildComponent(function(sectionName, childComponent) {
 			if (childComponent.isReady() === false) allChildrenReady = false;
 		});
-		
-		return (this._refreshList.length === 0 && this.pendingFetchCount === 0 && this.pendingInit === false);
+		return (allChildrenReady === true && this._refreshList.length === 0 && this.pendingFetchCount === 0 && this.pendingInit === false);
 	};
 	
 	return constructor;
