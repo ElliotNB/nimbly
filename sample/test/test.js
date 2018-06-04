@@ -1,4 +1,5 @@
 var expect = require('chai').expect;
+var should = require('chai').should();
 var jsdom = require('jsdom').JSDOM;
 var fs = require('fs');
 var Mustache = require('mustache');
@@ -39,20 +40,40 @@ describe('HelloWorld component test suite.', function() {
 	// initialize the base class and our components with all required dependencies
 	var TXMBase = require("../../txmbase.js")($,Mustache,ObservableSlim,Object);
 	var PersonData = require("../PersonData.js")($,Mustache,TXMBase);
+	var BadComponent = require("../BadComponent.js")($,Mustache,TXMBase);
 	var HelloWorld = require("../HelloWorld.js")($,Mustache,TXMBase,PersonData);
-	var helloWorld;
+	var helloWorld = new HelloWorld();
+	helloWorld.render();
 	
 	// before each test we instantiate the component and allow it to finish rendering before starting the tests
 	beforeEach(async () => { 
-		helloWorld = new HelloWorld();
-		helloWorld.render();
 		await whenReady(helloWorld);
+	});
+	
+	it('Five instances of PersonData child component are rendered.', () => {
+		expect(helloWorld.jqDom.find(".patient_data_container").length).to.equal(5);
 	});
 	
 	// verify that the HelloWorld component rendered with the correct title
 	it('Initial title reads "Hello world".', () => {	
 		var initialMessage = $.trim(helloWorld.jqDom.find(".hello_user_container").html());
 		expect(initialMessage).to.equal("Hello world!");
+	});
+	
+	it('"Charlie Smith" is the first person displayed.', () => {
+		var charliePresent = helloWorld.jqDom.find(".patient_data_container").html().indexOf("Charlie Smith");
+		expect(charliePresent).to.be.above(-1);
+		expect(helloWorld._data.patient_name).to.equal("Charlie Smith");
+	});
+	
+	it('Set a new user name.', async () => {
+		var jqUserNameTextBox = helloWorld.jqDom.find(".user_name_text");
+		jqUserNameTextBox.val("Elliot").keyup();
+		
+		await helloWorld.isReady();
+		
+		expect(helloWorld._data.user_name).to.equal("Elliot");
+		expect(jqUserNameTextBox.val()).to.equal("Elliot");
 	});
 	
 	// simulate a button click on 'Change patient name' and verify that the patient name changes
@@ -64,14 +85,17 @@ describe('HelloWorld component test suite.', function() {
 		await whenReady(helloWorld);
 		
 		// verify that the patient name has been updated in the component data and in the display
-		var namePresent = helloWorld.jqDom.find(".patient_data_container").html().indexOf("Bobby Smith");
-		expect(namePresent).to.be.above(-1)
+		var bobbyPresent = helloWorld.jqDom.find(".patient_data_container").html().indexOf("Bobby Smith");
+		var charliePresent = helloWorld.jqDom.find(".patient_data_container").html().indexOf("Charlie Smith");
+		expect(bobbyPresent).to.be.above(-1);
+		expect(charliePresent).to.equal(-1);
 		expect(helloWorld._data.patient_name).to.equal("Bobby Smith");
+		
 
 	});
 	
 	// simulate a button click on 'Switch patient' and verify that the patient is updated
-	it ('Click button, switch to patient "Larry Anderson".', async () => {
+	it('Click button, switch to patient "Larry Anderson".', async () => {
 	
 		helloWorld.jqDom.find(".load_next_patient_btn").click();
 		
@@ -81,4 +105,55 @@ describe('HelloWorld component test suite.', function() {
 		expect(helloWorld._data.patient_name).to.equal("Larry Anderson");
 	
 	});
+	
+	// verify that we're performing garbage clean-up on old components correctly	
+	it('Number of registered child components should not increase after a refresh.', () => {
+		
+		expect(helloWorld.childComponents["default"].length).to.equal(1);
+		expect(helloWorld.childComponents["repeat-person-data"].length).to.equal(4);
+		
+	});
+	
+	it('A refresh selector with multiple targets should throw an error.', () => {
+		
+		helloWorld.data.dummy_field = "hello";	
+		expect(function() {
+			helloWorld._refresh();
+		}).to.throw();
+		helloWorld._refreshList = [];
+		
+	});
+	
+	
+	it('Destroy a component.', () => {
+		helloWorld.destroy();
+		
+		expect(helloWorld.childComponents["default"].length).to.equal(0);
+		expect($(global.document).find(".hello_user_container").length).to.equal(0);
+		should.not.exist(helloWorld.childComponents["repeat-person-data"]);
+
+	});
+	
+	it('Trigger a manual refresh.', async() => {
+		
+		helloWorld.refresh();
+		whenReady(helloWorld);
+		expect(helloWorld.jqDom.find(".hello_user_container").length).to.equal(1);
+		
+	});
+	
+	it('Improper object returned by _render method should throw an error.', () => {
+		var badComponent = new BadComponent();
+		expect(function() {
+			badComponent.render();
+		}).to.throw();
+	});
+	
+	it('Data change triggers fetch method whose response triggers a data change and a refresh.', async() => {
+		var personComp = new PersonData();
+		personComp.data.chained_request = true;
+		await whenReady(personComp);
+		expect(personComp.data.chained_update).to.equal(true);
+	});
+	
 });

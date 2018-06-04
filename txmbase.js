@@ -103,7 +103,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 	var refreshQueue = [];
 	var uniqueIndex = [];
 	var queueRefresh = function(refreshData) {
-		if (refreshQueue.indexOf(refreshData.instanceId) == -1) {
+		if (refreshQueue.indexOf(refreshData.instanceId) === -1) {
 			uniqueIndex.push(refreshData.instanceId);
 			refreshQueue.push(refreshData.refresh)
 		}
@@ -219,8 +219,9 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		this._cleanUpChildren = null;
 		
 		/*	Property: this.childComponents
-				Array, if the .render() method initializes and renders other components, then those child components should be added to this array.
-				Tracking the child components here enables this base class to clean up and delete any orphaned components after a ._refresh() occurs.
+				Object, if the rendering of this component requires other components (children), then those child components should 
+				be registered on the parent component and tracked on this property. Tracking the child components here enables this 
+				base class to clean up and delete any orphaned components after a ._refresh() occurs.
 		*/
 		this.childComponents = {"default":[]};
 		
@@ -255,7 +256,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		if (typeof(this.options.loadingTemplate) == "string") {
 			this.loadingTemplate = _getTemplate(this.options.loadingTemplate);
 		} else {
-			this.loadingTemplate = "<div>loading</div>";
+			this.loadingTemplate = "<div></div>";
 		}
 		
 		/*	Property: this.uiBindings 
@@ -514,6 +515,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			fetchList - Array of strings, a list of the fetch methods that should be executed.
 	*/
 	constructor.prototype._fetch = function(delayRefresh, fetchList) {
+		
 		var self = this;
 		
 		// will this fetch require a load mask?
@@ -568,10 +570,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				
 				// if there are pending UI updates (possibly triggered by these fetches), then kick off the refresh process
 				if (self._refreshList == true || self._refreshList.length > 0) {
-					queueRefresh({
-						"instanceId": self.baseClassInstance
-						,"refresh":function() { self._refresh();}
-					});
+					queueRefresh({"instanceId": self.baseClassInstance,"refresh":function() { self._refresh();}});
 				}
 
 				self.pendingFetchCount--;
@@ -616,6 +615,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 					throw new Error(this.className + ".render() cannot continue. Component ._render() method must return a jQuery-referenced DOM element. Example: $('<div>hello world</div>');");
 				}
 				
+				// insert (if any) child components that have been registered to this component
 				this._insertChildren(jqDom);
 				
 				// the component has now been fully rendered, so mark the initial render boolean as true
@@ -642,41 +642,28 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			jQuery-referenced DocumentFragment, the component ready to be inserted into the DOM.
 	*/
 	constructor.prototype._render = function() {
-		// If the child class has not overwritten this method, then we just assume that 
-		var jqDom = $(Mustache.render(this.templates[0], this.data));
-		return jqDom;	
-	};
-	
-	/*	Method: this.notifyChange
-			Simulate a fake change on this.data in order to trigger the appropriate uiBindings and dataBindings.
-	*/
-	constructor.prototype.notifyChange = function(dataObj, prop) {
-		if (typeof dataObj !== "object") {
-			throw new Error("TXMBase::notifyChange() cannot continue -- dataObj must be an object.");
-		};
-		if (typeof prop !== "string") {
-			throw new Error("TXMBase::notifyChange() cannot continue -- dataObj must be a string.");
-		};
+		// If the child class has not overwritten this method, then we just assume that it's a component
+		// with one template whose data points are provided by this.data
 		
-		var origVal = dataObj[prop];
-		dataObj[prop] = null;
-		dataObj[prop] = origVal;
+		// grab the first template
+		for (var tplName in this.templates) break;
+		
+		var jqDom = $(Mustache.render(this.templates[tplName], this.data));
+		return jqDom;	
 	};
 	
 	/*	Method: this.refresh
 			Public refresh method that is invoked when we want to manually refresh the component.
 	*/
 	constructor.prototype.refresh = function() {
+		var self = this;
 		this.pendingRefresh = true;
 		this._refreshList = true;
-		queueRefresh({
-			"instanceId": self.baseClassInstance
-			,"refresh":function() { self._refresh();}
-		});
+		queueRefresh({"instanceId": self.baseClassInstance,"refresh":function() { self._refresh();}});
 	};
 	
 	/*	Method: this._refresh
-			This method is invoked when we want to re-render part or all of the component. This method is typically invoked after a new recipient or new 'regarding' entity has been added.
+			This method is invoked when we want to re-render part or all of the component.
 	*/
 	constructor.prototype._refresh = function() {
 		
@@ -711,13 +698,13 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 						// selectors should uniquely identify the element to be replaced, 
 						// if there are multiple targets, the .replaceWith won't work properly so we need to throw an error
 						if (jqOld.length > 1 || jqNew.length > 1) {
-							console.error("TXMBase::refresh() cannot continue. Refresh selector has multiple targets.");
-							break;
+							throw new Error("TXMBase::refresh() cannot continue. Refresh selector has multiple targets.");
 						} else {
 							jqOld.replaceWith(jqNew);
 						}
 					}
 					
+					// insert (if any) child components that have been registered to this component
 					this._insertChildren(this.jqDom);
 					
 					// component has been refreshed, so we can reset the pending list of refresh changes
@@ -728,9 +715,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				
 					var jqOldPage = this.jqDom;
 					var jqNewPage = this.render();
-				
 					jqOldPage.replaceWith(jqNewPage);
-					this.jqDom = jqNewPage;
 					
 					// component has been refreshed, so we can reset the pending list of refresh changes
 					this._refreshList = [];
@@ -742,26 +727,32 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				// are now part of our component's DOM or if they are just sitting orphaned in the virtual DOM. If they are orphaned
 				// and not in use, then we need to clean them up. that's what we do here. we execute it on a delayed settimeout so the clean-up
 				// does not block the UI and extend the amount of time before the page updates are displayed
- /* 			 	this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
+  			 	this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
 				var cleanUpTime = this._cleanUpChildren;
 				setTimeout(function() {
 					// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
 					if (cleanUpTime == self._cleanUpChildren) {
-						var i = self.childComponents.length;
-						while (i--) {
+						self._eachChildComponent(function(sectionName, childComponent, removeChild) {
 							// if the child component wasn't rendered or if it was rendered but is no longer contained within the parent component
 							// then we need to destroy it to reduce memory usage
-							if (self.childComponents[i].jqDom === null || !self.jqDom[0].contains(self.childComponents[i].jqDom[0])) {
-								self.childComponents[i].destroy();
-								self.childComponents.splice(i,1);
+							if (childComponent.jqDom === null || !self.jqDom[0].contains(childComponent.jqDom[0])) {
+								removeChild();
 							}
-						}
+						});
 					}
-				},7000); */
+				},500);
 			}
 		}
 	};
 	
+	/*	Method: this._insertChildren
+			This method will iterate over all child components that have been registered to this component, search
+			for a corresponding tag name (or tag name within a repeatable section) and replace that custom tag name
+			with a rendered child component.
+			
+		Parameters:
+			jqDom - jQuery-referenced DOM element of the component.
+	*/
 	constructor.prototype._insertChildren = function(jqDom) {
 		
 		for (var sectionName in this.childComponents) {
@@ -807,16 +798,24 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			callback - function, accepts two parameters, the current section name (string) and the child component.
 	*/
 	constructor.prototype._eachChildComponent = function(callback) {
-		
+		var self = this;
 		for (var sectionName in this.childComponents) {
 			var a = this.childComponents[sectionName].length;
 			while (a--) {
 				if (sectionName === "default") {
-					callback(sectionName, this.childComponents[sectionName][a]);
+					callback(sectionName, this.childComponents[sectionName][a], function() {
+						self.childComponents[sectionName][a].destroy();
+						 self.childComponents[sectionName].splice(a, 1);
+					});
 				} else {
 					var b = this.childComponents[sectionName][a].length;
 					while (b--) {
-						callback(sectionName, this.childComponents[sectionName][a][b]);
+						callback(sectionName, this.childComponents[sectionName][a][b], function() {
+							self.childComponents[sectionName][a][b].destroy();
+							self.childComponents[sectionName][a].splice(b, 1);
+							if (self.childComponents[sectionName][a].length === 0) self.childComponents[sectionName].splice(a, 1);
+							if (self.childComponents[sectionName].length === 0) delete self.childComponents[sectionName];
+						});
 					}
 				}
 			}
@@ -824,30 +823,25 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 	};
 	
 	/*	Method: this.registerChild
-			When a component nests other components within it, we refer to the original component as the "parent component" and the nested component(s) as "child component(s)".
-			In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our ._refresh() method
+			When a component nests other components within it, we refer to the original component as the "parent component" and 
+			the nested component(s) as "child component(s)". In order for refreshes of the parent component to work properly, 
+			we must register the child components on the parent component. This will allow our ._refresh() method
 			to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
+		Parameters:
+			childComponent - required, either a single child component instance or an array of child components. if the latter, this would
+							be a case where the sectionName is also provided and the 
 	*/
 	constructor.prototype.registerChild = function(childComponent, sectionName) {
 		
-		// verify that the user passed in a valid component that extends the base class
-/* 		if (typeof childComponent !== "object" 
-				|| childComponent.init !== this.init
-				|| childComponent.render !== this.render
-				|| childComponent.destroy !== this.destroy) {
-			throw new Error("TXMBase::registerChild() cannot continue -- childComponent is not a valid component.");
-		} else { */
-		
-			if (typeof sectionName === "undefined") sectionName = "default";
-		
-			if (typeof this.childComponents[sectionName] === "undefined") this.childComponents[sectionName] = [];
-		
-			// if the child component has not already been registered, then register it
-			if (this.childComponents[sectionName].indexOf(childComponent) === -1) {
-				this.childComponents[sectionName].push(childComponent);
-			}
-			
-//		}
+		// if a section name was not specified (meaning that the child component does not belong to a repeatable section
+		// then we simply assign the component to the default section
+		if (typeof sectionName === "undefined") sectionName = "default";
+		if (typeof this.childComponents[sectionName] === "undefined") this.childComponents[sectionName] = [];
+	
+		// if the child component has not already been registered, then register it
+		if (this.childComponents[sectionName].indexOf(childComponent) === -1) {
+			this.childComponents[sectionName].push(childComponent);
+		}
 	};
 	
 	/*	Method: this.destroy
@@ -860,10 +854,11 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 	*/
 	constructor.prototype.destroy = function() {
 		
-		// Destroy any child components
+		// destroy the child components -- we've just destroyed the parent component so we don't need to track the child components any longer
 		this._eachChildComponent(function(sectionName, childComponent) {
 			childComponent.destroy();
 		});
+		this.childComponents = {"default":[]};
 		
 		// Remove our data proxy from the ObservableSlim singleton. No further modifications to this.data will refreshes or fetches.
 		ObservableSlim.remove(this.data);

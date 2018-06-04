@@ -4,6 +4,7 @@ var useref = require('gulp-useref');
 var rename = require('gulp-rename');
 var mocha = require('gulp-mocha');
 var babel = require('gulp-babel');
+var istanbul = require('gulp-istanbul');
 
 gulp.task('default', function(){
   return gulp.src(['txmbase.js'])
@@ -16,6 +17,16 @@ gulp.task('default', function(){
 	.pipe(gulp.dest('./'))
 });
 
-gulp.task('test', function() {
-	return gulp.src(['sample/test/test.js']).pipe(mocha({compilers:babel}));
+gulp.task('pre-test', function () {
+	return gulp.src(['txmbase.js'])
+	// Covering files
+	.pipe(istanbul())
+	// Force `require` to return covered files
+	.pipe(istanbul.hookRequire());
+});
+
+gulp.task('test', ['pre-test'], function() {
+	return gulp.src(['sample/test/test.js'])
+	.pipe(mocha({compilers:babel}))
+	.pipe(istanbul.writeReports());
 });

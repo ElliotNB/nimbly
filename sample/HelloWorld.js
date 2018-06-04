@@ -6,6 +6,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 		,"initList":[{"method":"_fetchPatient","preventRender":true}]
 		,"uiBindings":{
 			"user_name":[".hello_user_container"]
+			,"dummy_field":[".throw_error_dupe"]
 		}
 		,"dataBindings":{
 			"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]} 
@@ -16,6 +17,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 			,"patient_name":null
 			,"birth_date":null
 			,"admit_date":null
+			,"dummy_field":"foobar"
 		}
 		,"delayInit":false
 	};
