@@ -114,15 +114,17 @@ The `defaults` and `options` parameters are the two most significant parameters 
 
 The full list of component settings is as follows:
 
-1. **`templates`** - Array, required, what templates the component will use identified by their `<script>` tag element ID.
+1. **`tagName`** - String, required, if this component is registered as a child of another component, then the `tagName` defines what custom tag in the template will include this component (e.g., `tagName:"hello-world" == <hello-world></hello-world>`).
 
-2. **`loadingTemplate`** - String, optional, if this component needs to display a loading message or a loading spinner, specify that template here.
+2. **`templates`** - Array, required, what templates the component will use identified by their `<script>` tag element ID.
 
-3. **`showLoadMask`** - Function, optional, executed when we need to display a loading mask over the component. Loading masks are typically displayed when we fetch data that must be retrieved before the UI can render.
+3. **`loadingTemplate`** - String, optional, if this component needs to display a loading message or a loading spinner, specify that template here.
 
-4. **`hideLoadMask`** - Function, optional, executed when we need to hide the loading mask over the component.
+4. **`showLoadMask`** - Function, optional, executed when we need to display a loading mask over the component. Loading masks are typically displayed when we fetch data that must be retrieved before the UI can render.
 
-5. **`initList`** - Array, optional, list of "fetch" methods (defined on the component, see below for details) that should be invoked in order to initialize the components. Example:
+5. **`hideLoadMask`** - Function, optional, executed when we need to hide the loading mask over the component.
+
+6. **`initList`** - Array, optional, list of "fetch" methods (defined on the component, see below for details) that should be invoked in order to initialize the components. Example:
 
 ```javascript
 [
@@ -202,7 +204,8 @@ class HelloWorld extends TXMBase {
 	constructor(data, options) {
         
 		const defaults = {
-			"templates":{
+			"tagName":"hello-world"
+			,"templates":{
 				"t4m_template_1":`
 					<div>
 						<p class="hello_user_container">
