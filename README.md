@@ -52,11 +52,11 @@ All TXMBase components have the following public properties:
 
 5. **`initialized`** - Boolean, set to true when the this.init() method has completed and the component is ready to render.
 
-6. **`childComponents`** - Array, if the .render() method initializes and registers (via `.registerChild`) other components, then those child components will be added to this array.
+6. **`childComponents`** - Hash, if a component registers (via `.registerChild`) other components, then those child components will be added to the hash. Child components are indexed on the hash according to what list or repeatable section they belong to. If a component is not part of a list, then that component is added to `this.childComponents.default`.
 
-7. **`templates`** - Hash, where the key is the name of the template and the value is a string containing the template.The hash contains each template used by the component. The template element identifiers are passed in via options.templates and below we will populate this.templates with the content of the template.
+7. **`templates`** - Hash, where the key is the name of the template and the value is a string containing the template. The hash contains each template used by the component. The template element identifiers are passed in via options.templates and below we will populate this.templates with the content of the template.
 
-8. **`loadingTemplate`** - String, element identifier of the template used to display a loading spinner or loading message. The loadingTemplate is utilized only if the .render() method is invoked before the component has been initialized. It allows the component to return a rendered DomNode that will be subsequently updated as soon as initialization completes.
+8. **`loadingTemplate`** - String, template content OR an element identifier of the template used to display a loading spinner or loading message. The loadingTemplate is utilized only if the .render() method is invoked before the component has been initialized. It allows the component to return a rendered DomNode that will be subsequently updated as soon as initialization completes.
 
 9. **`data`** - ES6 Proxy, serves as a proxy to the component model data (this._data) and enables the component to observe any changes that occur to the data. All modifications to component data should be made through this property.
 
@@ -91,9 +91,11 @@ All TXMBase components have the following public methods:
 
 JavaScript does not support protected methods, but the following methods are **intended** to be used as protected methods. They should not be invoked externally, but they may be invoked within component class that extends the `TXMBase` base class.
 	
-1. **`registerChild(childComponent)`** - When a component nests other components within it, we refer to the original component as the "parent component" and the nested component(s) as "child component(s)". In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our .refresh() method to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
+1. **`registerChild(childComponent, sectionName)`** - When a component nests other components within it, we refer to the original component as the "parent component" and the nested component(s) as "child component(s)". In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our .refresh() method to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
 	* *Parameters:*
 		* `childComponent` - an instance of a component that extends this base class (TXMBase).
+		* `sectionName` - optional, if the child component belongs to a list (repeated section), then the `sectionName` should equal the custom tag name in the template that encloses the list.
+		
 	* *Returns:* Nothing.
 
 2. **`showLoadMask()`** - Executed when we need to display a loading mask over the component. Loading masks are displayed when we fetch data that must be retrieved before the UI can refresh. Defined via `defaults` or `options`.
@@ -189,79 +191,72 @@ Component classes have their own set of methods that interact with the base clas
 
 ## Sample Component
 
-To see a live working example of a component built with TXMBase, please visit the **[Hello World component jsFiddle](https://jsfiddle.net/qz55k4az/13/)**.
+To see a live working example of a component built with TXMBase, please visit the **[Hello World component jsFiddle](https://jsfiddle.net/rh74dj6f/)**.
 
 The code for the above jsFiddle is as follows:
 
-**Template:**
-```html
-<script type="text/template" id="t4m_template_1">
-<div>
-	<p class="hello_user_container">
-		{{^have_name}}Hello world!{{/have_name}}
-    {{#have_name}}Hello <b>{{user_name}}</b>!{{/have_name}}
-  </p>
-  <p>
-  	Set your name:
-		<input type="text" value="" class="user_name_text"> <small>this.data.user_name = $(this).val();</small>
-  </p>
-  <p class="patient_data_container">
-  	Now viewing: {{patient_name}} <br>
-    Date of birth: {{birth_date}} <br>
-    Date of admission: {{admit_date}}<br>
-  </p>
-	<p>
-  	<input type="button" value="Change patient name" class="patient_name_change_btn"> <small>this.data.patient_name = 'Bobby Smith';</small> <br><br>
-    <input type="button" value="Switch patient" class="load_next_patient_btn"> <small>this.data.person_id = 5555555;</small>
-  </p>
-</div>
-</script>
-```
-
 **JavaScript:**
 ```javascript
-var HelloWorld = (function() {
+class HelloWorld extends TXMBase {
 
-	var defaults = {
-		"templates":["t4m_template_1"]
-		,"loadingTemplate":null
-		,"initList":[
-    		{"method":"_fetchPatient","preventRender":true}
-		]
-		,"uiBindings":{
-			"user_name":[".hello_user_container"]
-			,"patient_name":[".patient_data_container"]
-			,"admit_date":[".patient_data_container"]
-			,"birth_date":[".patient_data_container"]
-		}
-		,"dataBindings":{
-			"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]} 
-		}
-		,"data":{
-			"user_name":""
-      		,"person_id":3453456
-      		,"patient_name":null
-     		,"birth_date":null
-      		,"admit_date":null
-		}
-		,"delayInit":false
-	};
-
-	var constructor = function(data, options) {
-  
-		if (typeof data == "undefined") var data = {};
-		if (typeof options == "undefined") var options = {};
-
-        // invoke the base class constructor
-		TXMBase.call(this,"HelloWorld", defaults, data, options);
+	constructor(data, options) {
+        
+		const defaults = {
+			"templates":{
+				"t4m_template_1":`
+					<div>
+						<p class="hello_user_container">
+							{{^have_name}}Hello world!{{/have_name}}
+						{{#have_name}}Hello <b>{{user_name}}</b>!{{/have_name}}
+					  </p>
+					  <p>
+						Set your name:
+							<input type="text" value="" class="user_name_text"> <small>this.data.user_name = $(this).val();</small>
+					  </p>
+					  <p class="patient_data_container">
+						Now viewing: {{patient_name}} <br>
+						Date of birth: {{birth_date}} <br>
+						Date of admission: {{admit_date}}<br>
+					  </p>
+						<p>
+						<input type="button" value="Change patient name" class="patient_name_change_btn"> <small>this.data.patient_name = 'Bobby Smith';</small> <br><br>
+						<input type="button" value="Switch patient" class="load_next_patient_btn"> <small>this.data.person_id = 5555555;</small>
+					  </p>
+					</div>
+				`
+			}
+			,"loadingTemplate":null
+			,"initList":[
+				{"method":"_fetchPatient","preventRender":true}
+			]
+			,"uiBindings":{
+				"user_name":[".hello_user_container"]
+				,"patient_name":[".patient_data_container"]
+				,"admit_date":[".patient_data_container"]
+				,"birth_date":[".patient_data_container"]
+			}
+			,"dataBindings":{
+				"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]} 
+			}
+			,"data":{
+				"user_name":""
+				,"person_id":3453456
+				,"patient_name":null
+				,"birth_date":null
+				,"admit_date":null
+			}
+			,"delayInit":false
+		};
 		
+		// invoke the base class constructor
+		super("HelloWorld", defaults, data || {}, options || {});
 	};
-	
-	// extend this class with the base class
-	constructor.prototype = Object.create(TXMBase.prototype);
-	constructor.prototype.constructor = constructor;
 
-	constructor.prototype._render = function() {
+	// the render method is the only place where the UI for the component is generated. no other portion
+	// of the component is allowed to modify the display or make any manual DOM manipulations. this gives
+	// non-author devs a single place to inspect when they want to understand the display logic and figure
+	// out why a component looks the way it does
+	_render() {
 		
 		var self = this;
 		
@@ -290,7 +285,7 @@ var HelloWorld = (function() {
 
 		// when the user clicks this button, we update this.data.person_id. unlike the two buttons above,
 		// there is no uiBinding for this.data.person_id, but there is a dataBinding. The dataBinding for "person_id"
-		// invokes the _fetchLarry method. THe _fetchNewPatient method fires off an XHR request that retrieves 
+		// invokes the _fetchLarry method. The _fetchNewPatient method fires off an XHR request that retrieves 
 		// new patient data once that new patient data is stored on this.data it triggers a uiBinding 
 		// which updates the display automatically
 		jqDom.find(".load_next_patient_btn").on("click", function() {
@@ -304,7 +299,7 @@ var HelloWorld = (function() {
 	// this is a fetch method retrives the data set for our imaginary Charlie patient. this is the first patient we load
 	// because _fetchPatient is listed in the "initList" above so this fetch method gets executed when the component
 	// is initialized. we're using the jsfiddle echo request -- it simply echos back the data in the URI
-	constructor.prototype._fetchPatient = function(resolve, reject) {
+	_fetchPatient(resolve, reject) {
 
 		var self = this;
 
@@ -333,7 +328,7 @@ var HelloWorld = (function() {
 	// any change is made to this.data.person_id because of the dataBinding we've defined above. this XHR is just a
 	// hard-coded example, but in reality a _fetch* method would use this.data.person_id to request the correct data
 	// for whichever patient was just selected.
-	constructor.prototype._fetchNewPatient = function(resolve, reject) {
+	_fetchNewPatient(resolve, reject) {
 		var self = this;
 		$.ajax({
 			url:'/echo/js/?js={"patient_name":"Larry Anderson","birth_date":"October 13th, 1985","admit_date":"January 2nd, 2018"}',
@@ -356,9 +351,7 @@ var HelloWorld = (function() {
 
 	};
 	
-	return constructor;
-
-})();
+};
 
 // instantiate the component, accept the default config, not passing in any custom options
 var test = new HelloWorld();

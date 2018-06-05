@@ -1,6 +1,5 @@
-const PersonData = function($,Mustache,TXMBase) {
-
-	const defaults = {
+var PersonData = function($,Mustache,TXMBase) {
+	var defaults = {
 		"tagName":"person-data"
 		,"templates":{
 			"t4m_template_2":`
@@ -32,22 +31,21 @@ const PersonData = function($,Mustache,TXMBase) {
 		,"delayInit":false
 	};
 
-	class componentClass extends TXMBase {
+	var constructor = function(data, options) {
+		TXMBase.call(this,"PersonData", defaults, data || {}, options || {});
+	};
+	constructor.prototype = Object.create(TXMBase.prototype);
+	constructor.prototype.constructor = constructor;
 	
-		constructor(data, options) {
-			super("PersonData", defaults, data || {}, options || {});
-		};
-	
-		_fetchDummyData(resolve, reject) {
-			var self = this;
-			setTimeout(function() {
-				self.data.chained_update = true;
-				resolve();
-			},100);
-		};
+	constructor.prototype._fetchDummyData = function(resolve, reject) {
+		var self = this;
+		setTimeout(function() {
+			self.data.chained_update = true;
+			resolve();
+		},100);
 	};
 	
-	return componentClass;
+	return constructor;
 };
 
 if (typeof module === "undefined") {

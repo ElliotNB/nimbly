@@ -23,11 +23,10 @@
 		
 		defaults - Object, a variety of default options and preferences, see below:
 			{
-				// Array of strings, templates is an array containing all of the templates used by the component. allows for devs returning to the code later to 
-				// quickly learn which templates are necessary for the component to run
+				// Array of strings, where each item is either a string of the template itself or an element ID for a <script> tag containing the content of the template (for ES5 support).
 				"templates":["t4m_tpl_add_task_list","t4m_tpl_add_task_list_item"]
 				
-				// String, loadingTemplate is the template used by the component to return a temporary loading message or spinner. if set to null, then an empty <div></div> element is used
+				// String, template content OR an element identifier of the template used to display a loading spinner or loading message. If none is supplied, then an empty <div></div> is used.
 				,"loadingTemplate":"t4m_tpl_component_loading"
 				
 				// Array of objects, 
@@ -151,12 +150,13 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		// we keep a reference to the original 'data' object (so that changes to the data are relayed back to
 		// whatever initialized this component), but at the same time we merge in 'defaults' (which might contain 
 		// more fields than are contained in 'data') but *without* overwriting anything in 'data'.
-		defaults.data = $.extend(defaults.data,data);
-		data = $.extend(data, defaults.data);
+		var dataSuperSet = {};
+		$.extend(true, dataSuperSet, defaults.data, data);
+		$.extend(true, data, dataSuperSet);
 		
 		// merge the default options with custom options passed into the component constructor. we do not want to keep a reference
 		// to anything on defaults or options, so we can perform a deep copy instead of a shallow merge
-		this.options = $.extend(true, {}, defaults, options);
+		this.options = $.extend(true, {}, defaults, options, {"data":data});
 	
 		/*	Property: this.className
 				String, the name of the class that initialized the base class. We store this value for debugging and logging purposes.
@@ -225,36 +225,48 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		*/
 		this.childComponents = {"default":[]};
 		
-		/*	Property: this.templates
-				Hash, where the key is the name of the template and the value is a string containing the template.The hash contains each template used by the component. 
-				The template element identifiers are passed in via options.templates and below we will populate this.templates with the content of the template.
-		*/
-		this.templates = {};
-		
 		/*	Property: this._refreshList
 				Array or boolean, used to store CSS selectors for the portions of the component that must be updated given the recent data change. If set
 				to true (boolean), then that implies the entire component needs to be refreshed.
 		*/
 		this._refreshList = [];
 		
-		// if no templates were provided, throw an error because we can't continue without something to render.
-		if (this.options.templates.length == 0) {
-			throw new Error("TXMBase::constructor cannot continue -- no templates provided.");
-		// else loop over each Mustache template element identifier and add the content of the template to this.templates
-		} else {
-			for (var i = 0; i < this.options.templates.length; i++) {
-				// _getTemplate will throw an error if the template doesn't exist
-				this.templates[this.options.templates[i]] = (_getTemplate(this.options.templates[i]));
+		/*	Property: this.templates
+				Hash, where the key is the name of the template and the value is a string containing the template. The hash contains each template used by the component. 
+				The template element identifiers are passed in via options.templates and below we will populate this.templates with the content of the template.
+		*/
+		this.templates = {};
+		
+		// if the component defined the templates as an array, then that means the component has identifier their templates
+		// using element IDs of <script> tags -- we now need to go retrieve the contents of those templates
+		if (this.options.templates instanceof Array) {
+			// if no templates were provided, throw an error because we can't continue without something to render.
+			if (this.options.templates.length == 0) {
+				throw new Error("TXMBase::constructor cannot continue -- no templates provided.");
+			// else loop over each Mustache template element identifier and add the content of the template to this.templates
+			} else {
+				for (var i = 0; i < this.options.templates.length; i++) {
+					// _getTemplate will throw an error if the template doesn't exist
+					this.templates[this.options.templates[i]] = (_getTemplate(this.options.templates[i]));
+				}
 			}
+		// else the templates were passed in as a hash using name value pairs with template literals containing the template content
+		} else {
+			this.templates = this.options.templates;
 		}
 		
 		/*	Property: this.loadingTemplate
-				String, element identifier of the template used to display a loading spinner or loading message. The loadingTemplate
+				String, template content OR an element identifier of the template used to display a loading spinner or loading message. The loadingTemplate
 				is utilized only if the .render() method is invoked before the component has been initialized. It allows the component to return
 				a rendered DomNode that will be subsequently updated as soon as initialization completes.
 		*/
 		if (typeof(this.options.loadingTemplate) == "string") {
-			this.loadingTemplate = _getTemplate(this.options.loadingTemplate);
+			// if the user supplied an element identifier, then go fetch the content of the 
+			if (document.getElementById(this.options.loadingTemplate)) {
+				this.loadingTemplate = _getTemplate(this.options.loadingTemplate);
+			} else {
+				this.loadingTemplate = this.options.loadingTemplate;
+			}
 		} else {
 			this.loadingTemplate = "<div></div>";
 		}
@@ -828,8 +840,8 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			we must register the child components on the parent component. This will allow our ._refresh() method
 			to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
 		Parameters:
-			childComponent - required, either a single child component instance or an array of child components. if the latter, this would
-							be a case where the sectionName is also provided and the 
+			childComponent - required, either a single child component instance or an array of child components. If the latter, then the sectionName is also required.
+			sectionName - optional, specifies the tag name of the repeatable section that a set of child components should be added to.
 	*/
 	constructor.prototype.registerChild = function(childComponent, sectionName) {
 		

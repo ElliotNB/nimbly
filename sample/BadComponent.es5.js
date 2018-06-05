@@ -1,6 +1,5 @@
-const BadComponent = function($,Mustache,TXMBase) {
-	
-	const defaults = {
+var BadComponent = function($,Mustache,TXMBase) {
+	var defaults = {
 		"tagName":"person-data"
 		,"templates":{
 			"t4m_template_2":`
@@ -30,24 +29,22 @@ const BadComponent = function($,Mustache,TXMBase) {
 		}
 		,"delayInit":false
 	};
-	
-	class componentClass extends TXMBase {
 
-		constructor(data, options) {
-			super("BadComponent", defaults, data || {}, options || {});
-		};
-
-		_render() {
-			return "<div></div>";
-		}
-		
-		_fetchBadData(resolve, reject) {
-			throw new Error("Bad component fails to fetch data.");
-		}
-	
+	var constructor = function(data, options) {
+		TXMBase.call(this,"BadComponent", defaults, data || {}, options || {});
 	};
+	constructor.prototype = Object.create(TXMBase.prototype);
+	constructor.prototype.constructor = constructor;
 	
-	return componentClass;
+	constructor.prototype._render = function() {
+		return "<div></div>";
+	}
+	
+	constructor.prototype._fetchBadData = function(resolve, reject) {
+		throw new Error("Bad component fails to fetch data.");
+	}
+	
+	return constructor;
 };
 
 if (typeof module === "undefined") {

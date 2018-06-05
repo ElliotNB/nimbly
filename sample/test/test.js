@@ -23,9 +23,8 @@ describe('HelloWorld component test suite.', function() {
 	// extend the default timeout from 2 seconds to 5 seconds
 	this.timeout(5000);
 
-	// create a fake DOM using jsdom and the templates provided by the component
-	var htmlHelloWorld = fs.readFileSync('./sample/templates.html').toString();
-	var window = (new jsdom(htmlHelloWorld)).window;
+	// create a fake DOM using jsdom
+	var window = (new jsdom("<!DOCTYPE html><head></head><body></body></html>")).window;
 	global.document = window.document;
 	
 	// initialize jquery with the fake DOM we've created
@@ -33,9 +32,7 @@ describe('HelloWorld component test suite.', function() {
 	
 	// apply adjustments to jquery so that ajax requests work in a node environment
 	$.support.cors = true;
-	$.ajaxSettings.xhr = function() {
-		return new XMLHttpRequest();
-	};
+	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 	
 	// initialize the base class and our components with all required dependencies
 	var TXMBase = require("../../txmbase.js")($,Mustache,ObservableSlim,Object);

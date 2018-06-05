@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="lib/mustache.min.js"></script>
+<script src="lib/observable-slim.min.js"></script>
+<script src="lib/jquery-2.1.4.min.js"></script>
+<script src="../txmbase.js"></script>
+<script src="PersonData.js"></script>
+<script src="BadComponent.js"></script>
+<script src="HelloWorld.js"></script>
+<script>
+
+$(document).ready(function() {
+
+	// instantiate the component, accept the default config, not passing in any custom options
+	var test = new HelloWorld();
+
+	// render the component 
+	var rendered = test.render();
+
+	// insert the component to the page
+	$("body").append(rendered);
+
+});
+
+</script>
+
+</head>
+<body>
+</body>
+</html>
