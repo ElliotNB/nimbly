@@ -1,4 +1,4 @@
-const HelloWorld = function($,Mustache,TXMBase,PersonData) {
+var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 
 	const defaults = {
 		"tagName":"hello-world"

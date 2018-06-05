@@ -1,4 +1,4 @@
-const BadComponent = function($,Mustache,TXMBase) {
+var BadComponent = function($,Mustache,TXMBase) {
 	
 	const defaults = {
 		"tagName":"person-data"

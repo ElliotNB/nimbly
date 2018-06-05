@@ -1,4 +1,4 @@
-const PersonData = function($,Mustache,TXMBase) {
+var PersonData = function($,Mustache,TXMBase) {
 
 	const defaults = {
 		"tagName":"person-data"
