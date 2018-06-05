@@ -1,32 +1,7 @@
 var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 	var defaults = {
 		"tagName":"hello-world"
-		,"templates":{
-			"t4m_template_1":`
-				<div>
-					<p class="hello_user_container">
-						{{^have_name}}Hello world!{{/have_name}}
-						{{#have_name}}Hello <b>{{user_name}}</b>!{{/have_name}}
-					</p>
-					<p>
-						Set your name:
-						<input type="text" value="" class="user_name_text"> <small>this.data.user_name = $(this).val();</small>
-					</p>
-					<person-data></person-data>
-					<p>START</p>
-					<repeat-person-data>
-						<person-data>
-					</repeat-person-data>
-					<p>END</p>
-					<p>
-						<input type="button" value="Change patient name" class="patient_name_change_btn"> <small>this.data.patient_name = 'Bobby Smith';</small> <br><br>
-						<input type="button" value="Switch patient" class="load_next_patient_btn"> <small>this.data.person_id = 5555555;</small>
-					</p>
-					<p class="throw_error_dupe"></p>
-					<p class="throw_error_dupe"></p>
-				</div>
-			`
-		}
+		,"templates":["t4m_template_1"]
 		,"loadingTemplate":null
 		,"initList":[{"method":"_fetchPatient","preventRender":true}]
 		,"uiBindings":{

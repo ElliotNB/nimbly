@@ -1,15 +1,7 @@
 var BadComponent = function($,Mustache,TXMBase) {
 	var defaults = {
 		"tagName":"person-data"
-		,"templates":{
-			"t4m_template_2":`
-				<p class="patient_data_container">
-					Now viewing: {{patient_name}} <br>
-					Date of birth: {{birth_date}} <br>
-					Date of admission: {{admit_date}}<br>
-				</p>
-			`
-		}
+		,"templates":["t4m_template_2"]
 		,"loadingTemplate":null
 		,"initList":[]
 		,"uiBindings":{
