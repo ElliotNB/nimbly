@@ -1,4 +1,4 @@
-var HelloWorld = function($,Mustache,TXMBase,PersonData) {
+var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 
 	const defaults = {
 		"tagName":"hello-world"
@@ -12,6 +12,12 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 					<p>
 						Set your name:
 						<input type="text" value="" class="user_name_text"> <small>this.data.user_name = $(this).val();</small>
+					</p>
+					<p>
+						List item test:
+						<ul is="repeat-list">
+							<li is="list-item-test">hello world</li>
+						</ul>
 					</p>
 					<person-data></person-data>
 					<p>START</p>
@@ -35,7 +41,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 			,"dummy_field":[".throw_error_dupe"]
 		}
 		,"dataBindings":{
-			"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]} 
+			"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]}
 		}
 		,"data":{
 			"user_name":""
@@ -49,24 +55,30 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 	};
 
 	class componentClass extends TXMBase {
-		
+
 		constructor(data, options) {
 			super("HelloWorld", defaults, data || {}, options || {});
 		};
-	
+
 		_render() {
-			
+
 			var self = this;
-			
+
 			var personData = new PersonData(this.data,null);
 			this.registerChild(personData);
-			
+
 			var i = 4;
 			while (i--) {
 				var temp = new PersonData(this.data,null);
 				this.registerChild([temp], "repeat-person-data");
 			}
-			
+
+			var i = 4;
+			while (i--) {
+				var listItem = new ListItemComp(this.data,null);
+				this.registerChild([listItem], "repeat-list");
+			}
+
 			var tplData = {
 				"have_name":(this.data.user_name.length > 0 ? true : false)
 				,"user_name":this.data.user_name
@@ -88,11 +100,11 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 			jqDom.find(".load_next_patient_btn").on("click", function() {
 				self.data.person_id = 5555555;
 			});
-				
+
 			return jqDom;
-		
+
 		};
-	  
+
 		_fetchPatient(resolve, reject) {
 			var self = this;
 			setTimeout(function() {
@@ -103,7 +115,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 				resolve();
 			},500);
 		};
-	  
+
 
 		_fetchNewPatient(resolve, reject) {
 
@@ -117,17 +129,17 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 			},500);
 
 		};
-	
+
 	};
-	
+
 	return componentClass;
 
 };
 
 if (typeof module === "undefined") {
-	window["HelloWorld"] = HelloWorld($,Mustache,TXMBase,PersonData);
+	window["HelloWorld"] = HelloWorld($,Mustache,TXMBase,PersonData,ListItemComp);
 } else {
-	module.exports = function($,Mustache,TXMBase,PersonData) {
-		return HelloWorld($,Mustache,TXMBase,PersonData);
+	module.exports = function($,Mustache,TXMBase,PersonData,ListItemComp) {
+		return HelloWorld($,Mustache,TXMBase,PersonData,ListItemComp);
 	};
 }
