@@ -60,10 +60,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 			super("HelloWorld", defaults, data || {}, options || {});
 		};
 
-		_render() {
-
-			var self = this;
-
+		_init() {
 			var personData = new PersonData(this.data,null);
 			this.registerChild(personData);
 
@@ -78,7 +75,12 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 				var listItem = new ListItemComp(this.data,null);
 				this.registerChild([listItem], "repeat-list");
 			}
+			
+		};
 
+		_render() {
+
+			var self = this;
 			var tplData = {
 				"have_name":(this.data.user_name.length > 0 ? true : false)
 				,"user_name":this.data.user_name

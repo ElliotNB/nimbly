@@ -78,6 +78,12 @@ describe('HelloWorld component test suite.', function() {
 		expect(jqUserNameTextBox.val()).to.equal("Elliot");
 	});
 
+	it('Verify that the list items in <repeat-list></repeat-list> remain at a count of four.', () => {
+		var listItemsCount = helloWorld.jqDom.find(".list-item-test").length;
+
+		expect(listItemsCount).to.equal(4);
+	});
+
 	// simulate a button click on 'Change patient name' and verify that the patient name changes
 	it('Click button, change patient name to "Bobby Smith".', async () => {
 

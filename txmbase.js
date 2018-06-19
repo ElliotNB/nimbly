@@ -792,62 +792,92 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				repeatSection = jqDom.find("table[is='"+sectionName+"'], tbody[is='"+sectionName+"'], select[is='"+sectionName+"'], ul[is='"+sectionName+"'], ol[is='"+sectionName+"']");
 			}
 
-			// loop over each set of child components registered to this repeatable sectionName
-			//	each set of components (sectionItemComponents below) represents one iteration of the repeatable section
-			var sectionComponents = this.childComponents[sectionName];
-			for (var a = 0; a < sectionComponents.length; a++) {
+			// if we found one tag matching the repeatable section, then we can proceed to populate that tag with iterations of child components
+			if (repeatSection.length === 1) {
 
-				// create a clone of the repeatable section we identified above
-				var cloneRepeatSection = repeatSection.clone();
+				// loop over each set of child components registered to this repeatable sectionName
+				//	each set of components (sectionItemComponents below) represents one iteration of the repeatable section
+				var sectionComponents = this.childComponents[sectionName];
+				for (var a = 0; a < sectionComponents.length; a++) {
 
-				// loop over the child components registered to this iteration of the repeatable section
-				// and replace the custom tag for that child component with the rendered content of the child component
-				var sectionItemComponents = sectionComponents[a];
-				for (var b = 0; b < sectionItemComponents.length; b++) {
-					var childComponent = sectionItemComponents[b];
+					// create a clone of the repeatable section we identified above
+					var cloneRepeatSection = repeatSection.clone();
 
-					// find the custom tag for where we'll be inserting the rendered child component
-					var childTarget = cloneRepeatSection.find(childComponent.options.tagName);
+					// loop over the child components registered to this iteration of the repeatable section
+					// and replace the custom tag for that child component with the rendered content of the child component
+					var sectionItemComponents = sectionComponents[a];
+					for (var b = 0; b < sectionItemComponents.length; b++) {
+						var childComponent = sectionItemComponents[b];
 
-					// if we didn't find a matching custom tag for the child component, then it's possible it could be contained
-					// in a special tag that must be used in order to appear within <select> <table> <ul> or <ol> elements
-					if (childTarget.length === 0) {
-						var possibleAltMatches = cloneRepeatSection.find("tbody, tr, td, li, option");
+						// find the custom tag for where we'll be inserting the rendered child component
+						var childTarget = cloneRepeatSection.find(childComponent.options.tagName);
 
-						possibleAltMatches.each(function(i, elmt) {
-							var jqElmt = $(elmt);
-							if (jqElmt.attr("is") === childComponent.options.tagName) {
-								childTarget = jqElmt;
+						// if we didn't find a matching custom tag for the child component, then it's possible it could be contained
+						// in a special tag that must be used in order to appear within <select> <table> <ul> or <ol> elements
+						if (childTarget.length === 0) {
+							var possibleAltMatches = cloneRepeatSection.find("tbody, tr, td, li, option");
 
-								// break out of the each loop
-								return false;
-							}
-						});
+							possibleAltMatches.each(function(i, elmt) {
+								var jqElmt = $(elmt);
+								if (jqElmt.attr("is") === childComponent.options.tagName) {
+									childTarget = jqElmt;
+
+									// remove the is attribute as an indicator that the component has been populated
+									childTarget.removeAttr("is");
+
+									// break out of the each loop
+									return false;
+								}
+							});
+
+						}
+
+						// only render the child component if we've found exactly one target to insert to
+						// 	( if this component was only partially refreshed, then we may not need to re-render all child components -- invoking .render()
+						//	would actually cause this.jqDom on the child component to update leading to problems)
+						if (childTarget.length === 1) {
+							childTarget.replaceWith(childComponent.render());
+
+						// else if there are multiple tags in the rendered component that match this child component's tag, then we need to throw an error
+						// if there are duplicate tags in the repeatable section that match this child component, then it's impossible to know which one is the right one
+						// to insert the child component
+						} else if (childTarget.length > 1) {
+							throw new Error("TXMBase::_insertChildren() cannot continue. Found multiple <"+childComponent.options.tagName+"> tags. A repeatable section must not contain duplicate child tags.");
+						}
 
 					}
 
-					childTarget.replaceWith(childComponent.render());
+					// add the fully rendered content of this iteration of the repeatable section to the array we're using to keep track of all of them
+					sectionContent.push(cloneRepeatSection.contents());
 
 				}
 
-				// add the fully rendered content of this iteration of the repeatable section to the array we're using to keep track of all of them
-				sectionContent.push(cloneRepeatSection.contents());
+				// insert the fully rendered repeatable section into the component DOM
+				if (repeatSection.attr("is") === sectionName) {
+					repeatSection.html("");
+					// remove the is attribute as an indicator that the repeatable section has been populated
+					repeatSection.removeAttr("is");
+					repeatSection.append(sectionContent);
+				} else {
+					repeatSection.replaceWith(sectionContent);
+				}
 
-			}
-
-			// insert the fully rendered repeatable section into the component DOM
-			if (repeatSection.attr("is") === sectionName) {
-				repeatSection.html("");
-				repeatSection.append(sectionContent);
-			} else {
-				repeatSection.replaceWith(sectionContent);
+			// else if we found more than one tag that matches the repeatable section, that's a problem. you should never have a template
+			// that has two repeatable sections with the same tag name because we wouldn't know which one is the right place to populate the repeatable section
+			} else if (repeatSection.length > 1) {
+				throw new Error("TXMBase::_insertChildren() cannot continue. Found multiple <"+sectionName+"> tags. A repeatable section must have one insertion target (i.e., one matching custom tag).");
 			}
 
 		}
 
 		var i = this.childComponents["default"].length;
 		while (i--) {
-			jqDom.find(this.childComponents["default"][i].options.tagName).replaceWith(this.childComponents["default"][i].render());
+			var insertTarget = jqDom.find(this.childComponents["default"][i].options.tagName);
+			if (insertTarget.length === 1) {
+				insertTarget.replaceWith(this.childComponents["default"][i].render());
+			} else if (insertTarget.length > 1) {
+				throw new Error("TXMBase::_insertChildren() cannot continue. Found multiple <"+this.childComponents["default"][i].options.tagName+"> tags. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
+			}
 		};
 	};
 
