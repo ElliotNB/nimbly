@@ -633,7 +633,12 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				}
 
 				// insert (if any) child components that have been registered to this component
-				this._insertChildren(jqDom);
+				var insertedChildren = this._insertChildren(jqDom);
+
+				var i = insertedChildren.length;
+				while (i--) {
+					insertedChildren[i].comp.jqDom = insertedChildren[i].elmt;
+				};
 
 				// the component has now been fully rendered, so mark the initial render boolean as true
 				this.initRendered = true;
@@ -643,6 +648,19 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		this.jqDom = jqDom;
 
 		return jqDom;
+	};
+
+	constructor.prototype._renderWithChildren = function() {
+
+		var jqDom = this._render();
+
+		var insertedChildren = this._insertChildren(jqDom);
+
+		return {
+			"elmt": jqDom
+			,"insertedChildren":insertedChildren
+		};
+
 	};
 
 	/*	Method: this._render()
@@ -669,103 +687,6 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		return jqDom;
 	};
 
-	/*	Method: this.refresh
-			Public refresh method that is invoked when we want to manually refresh the component.
-	*/
-	constructor.prototype.refresh = function() {
-		var self = this;
-		this.pendingRefresh = true;
-		this._refreshList = true;
-		queueRefresh({"instanceId": self.baseClassInstance,"refresh":function() { self._refresh();}});
-	};
-
-	/*	Method: this._refresh
-			This method is invoked when we want to re-render part or all of the component.
-	*/
-	constructor.prototype._refresh = function() {
-
-		var self = this;
-
-		// if the component hasn't been initialized yet, then we ignore any refresh requests. a component
-		// cannot be rendered until it has been initialized so therefore there's nothing to refresh yet.
-		// we also cannot perform a refresh if this.delayRefresh is set to true -- implies that there are pending data
-		// requests that need to complete before we can do any updating
-		if (this.initialized == true && this.delayRefresh == false) {
-
-			if (this.jqDom === null) {
-				this.render();
-			} else {
-
-				// if a selector was provided, then we don't need to refresh the whole component, only a portion of it
-				if (typeof this._refreshList == "object" && this._refreshList.length > 0) {
-
-					// remove any duplicate selectors
-					this._refreshList = this._refreshList.filter(function(item, pos) {
-						return self._refreshList.indexOf(item) == pos;
-					});
-
-					var jqNewPage = this._render();
-					// the render method will set this.jqDom to whatever was rendered last, so we need to set it back to the old page since we're not refreshing the whole page
-					var i = this._refreshList.length;
-					while (i--) {
-
-						var jqOld = this.jqDom.find(this._refreshList[i]);
-						var jqNew = jqNewPage.find(this._refreshList[i]);
-
-						// selectors should uniquely identify the element to be replaced,
-						// if there are multiple targets, the .replaceWith won't work properly so we need to throw an error
-						if (jqOld.length > 1 || jqNew.length > 1) {
-							throw new Error("TXMBase::refresh() cannot continue. Refresh selector has multiple targets.");
-						} else {
-							jqOld.replaceWith(jqNew);
-						}
-					}
-
-					// insert (if any) child components that have been registered to this component
-					this._insertChildren(this.jqDom);
-
-					// component has been refreshed, so we can reset the pending list of refresh changes
-					this._refreshList = [];
-
-				// else if this._refreshList has been set to true (boolean) we must refresh the entire component
-				} else if (this._refreshList == true) {
-
-					var jqOldPage = this.jqDom;
-					var jqNewPage = this.render();
-					jqOldPage.replaceWith(jqNewPage);
-
-					// component has been refreshed, so we can reset the pending list of refresh changes
-					this._refreshList = [];
-
-					if (typeof this._fullRefreshHook === "function") {
-						this._fullRefreshHook(jqOldPage, jqNewPage);
-					}
-
-				}
-
-				// since we've just refreshed our component, it's possible that our component could have instantiated
-				// new child components in its .render() method. if that has happened, then we need to see if those components
-				// are now part of our component's DOM or if they are just sitting orphaned in the virtual DOM. If they are orphaned
-				// and not in use, then we need to clean them up. that's what we do here. we execute it on a delayed settimeout so the clean-up
-				// does not block the UI and extend the amount of time before the page updates are displayed
-  			 	this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
-				var cleanUpTime = this._cleanUpChildren;
-				setTimeout(function() {
-					// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
-					if (cleanUpTime == self._cleanUpChildren) {
-						self.eachChildComponent(function(childComponent, sectionName, removeChild) {
-							// if the child component wasn't rendered or if it was rendered but is no longer contained within the parent component
-							// then we need to destroy it to reduce memory usage
-							if (childComponent.jqDom === null || !self.jqDom[0].contains(childComponent.jqDom[0])) {
-								removeChild();
-							}
-						});
-					}
-				},500);
-			}
-		}
-	};
-
 	/*	Method: this._insertChildren
 			This method will iterate over all child components that have been registered to this component, search
 			for a corresponding tag name (or tag name within a repeatable section) and replace that custom tag name
@@ -775,6 +696,8 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			jqDom - jQuery-referenced DOM element of the component.
 	*/
 	constructor.prototype._insertChildren = function(jqDom) {
+
+		var insertedChildren = [];
 
 		// loop over each repeatable section thats been registered on this component
 		for (var sectionName in this.childComponents) {
@@ -836,7 +759,17 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 						// 	( if this component was only partially refreshed, then we may not need to re-render all child components -- invoking .render()
 						//	would actually cause this.jqDom on the child component to update leading to problems)
 						if (childTarget.length === 1) {
-							childTarget.replaceWith(childComponent.render());
+
+							var renderResult = childComponent._renderWithChildren();
+
+							insertedChildren.push({
+								comp:childComponent
+								,elmt:renderResult.elmt
+							});
+
+							insertedChildren.push.apply(insertedChildren, renderResult.insertedChildren);
+
+							childTarget.replaceWith(renderResult.elmt);
 
 						// else if there are multiple tags in the rendered component that match this child component's tag, then we need to throw an error
 						// if there are duplicate tags in the repeatable section that match this child component, then it's impossible to know which one is the right one
@@ -874,11 +807,151 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		while (i--) {
 			var insertTarget = jqDom.find(this.childComponents["default"][i].options.tagName);
 			if (insertTarget.length === 1) {
-				insertTarget.replaceWith(this.childComponents["default"][i].render());
+
+				var renderResult = this.childComponents["default"][i]._renderWithChildren();
+
+				insertedChildren.push({
+					comp:this.childComponents["default"][i]
+					,elmt:renderResult.elmt
+				});
+
+				insertedChildren.push.apply(insertedChildren, renderResult.insertedChildren);
+
+				insertTarget.replaceWith(renderResult.elmt);
 			} else if (insertTarget.length > 1) {
 				throw new Error("TXMBase::_insertChildren() cannot continue. Found multiple <"+this.childComponents["default"][i].options.tagName+"> tags. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
 			}
 		};
+
+		return insertedChildren;
+	};
+
+	/*	Method: this.refresh
+			Public refresh method that is invoked when we want to manually refresh the component.
+	*/
+	constructor.prototype.refresh = function() {
+		var self = this;
+		this.pendingRefresh = true;
+		this._refreshList = true;
+		queueRefresh({"instanceId": self.baseClassInstance,"refresh":function() { self._refresh();}});
+	};
+
+	/*	Method: this._refresh
+			This method is invoked when we want to re-render part or all of the component.
+	*/
+	constructor.prototype._refresh = function() {
+
+		var self = this;
+
+		// if the component hasn't been initialized yet, then we ignore any refresh requests. a component
+		// cannot be rendered until it has been initialized so therefore there's nothing to refresh yet.
+		// we also cannot perform a refresh if this.delayRefresh is set to true -- implies that there are pending data
+		// requests that need to complete before we can do any updating
+		if (this.initialized == true && this.delayRefresh == false) {
+
+			if (this.jqDom === null) {
+				this.render();
+			} else {
+
+				// if a selector was provided, then we don't need to refresh the whole component, only a portion of it
+				if (typeof this._refreshList == "object" && this._refreshList.length > 0) {
+
+					// remove any duplicate selectors
+					this._refreshList = this._refreshList.filter(function(item, pos) {
+						return self._refreshList.indexOf(item) == pos;
+					});
+
+					// determine if any of the selectors in the refreshList contain other selectors (we can skip the inner selectors beacuse the parent is getting updated anyway)
+					if (this._refreshList.length > 1) {
+						var a = this._refreshList.length;
+						while (a--) {
+							var domCurr = this.jqDom.find(this._refreshList[a])[0];
+							var b = this._refreshList.length;
+							while (b--) {
+								if (a !== b) {
+									var domCheck = this.jqDom.find(this._refreshList[b])[0];
+									if (domCheck.contains(domCurr)) {
+										this._refreshList.splice(a,1);
+										break;
+									}
+								}
+							};
+						}
+					}
+
+					//var jqNewComponent = this._render();
+					var renderResult = this._renderWithChildren();
+					var jqNewComponent = renderResult.elmt;
+					var insertedChildren = renderResult.insertedChildren;
+					// the render method will set this.jqDom to whatever was rendered last, so we need to set it back to the old page since we're not refreshing the whole page
+					var i = this._refreshList.length;
+					while (i--) {
+
+						var jqOld = this.jqDom.find(this._refreshList[i]);
+						var jqNew = jqNewComponent.find(this._refreshList[i]);
+
+						// selectors should uniquely identify the element to be replaced,
+						// if there are multiple targets, the .replaceWith won't work properly so we need to throw an error
+						if (jqOld.length > 1 || jqNew.length > 1) {
+							throw new Error("TXMBase::refresh() cannot continue. Refresh selector has multiple targets.");
+						} else {
+							jqOld.replaceWith(jqNew);
+						}
+					}
+
+					// insert (if any) child components that have been registered to this component
+					//this._insertChildren(this.jqDom);
+					var i = insertedChildren.length;
+					while (i--) {
+						if (this.jqDom[0].contains(insertedChildren[i].elmt[0])) {
+							insertedChildren[i].comp.jqDom = insertedChildren[i].elmt;
+						}
+					}
+
+					// component has been refreshed, so we can reset the pending list of refresh changes
+					this._refreshList = [];
+
+					//if (typeof this._postRefresh === "function") {
+					//	this._postRefresh(false);
+					//}
+
+				// else if this._refreshList has been set to true (boolean) we must refresh the entire component
+				} else if (this._refreshList == true) {
+
+					var jqOldComponent = this.jqDom;
+					var jqNewComponent = this.render();
+					jqOldComponent.replaceWith(jqNewComponent);
+
+					// component has been refreshed, so we can reset the pending list of refresh changes
+					this._refreshList = [];
+
+					if (typeof this._postRefresh === "function") {
+						this._postRefresh(true, jqOldComponent);
+					}
+
+				}
+
+				// since we've just refreshed our component, it's possible that our component could have instantiated
+				// new child components in its .render() method. if that has happened, then we need to see if those components
+				// are now part of our component's DOM or if they are just sitting orphaned in the virtual DOM. If they are orphaned
+				// and not in use, then we need to clean them up. that's what we do here. we execute it on a delayed settimeout so the clean-up
+				// does not block the UI and extend the amount of time before the page updates are displayed
+  			 	this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
+				var cleanUpTime = this._cleanUpChildren;
+				setTimeout(function() {
+					// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
+					if (cleanUpTime == self._cleanUpChildren) {
+						self.eachChildComponent(function(childComponent, sectionName, removeChild) {
+							// if the child component wasn't rendered or if it was rendered but is no longer contained within the parent component
+							// then we need to destroy it to reduce memory usage
+							if (childComponent.jqDom === null || !self.jqDom[0].contains(childComponent.jqDom[0])) {
+								removeChild();
+							}
+						});
+					}
+				},500);
+			}
+		}
 	};
 
 	/*	Method: this.eachChildComponent(handler)

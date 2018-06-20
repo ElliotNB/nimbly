@@ -132,6 +132,23 @@ describe('HelloWorld component test suite.', function() {
 
 	});
 
+	it('Event handlers in repeatable sections still work after a refresh of that section.', async () => {
+		// click the 'add item' button to add another list item
+		helloWorld.jqDom.find(".add_list_item").click();
+
+		await whenReady(helloWorld);
+
+		var listItemCount = helloWorld.jqDom.find(".list-item-test").length;
+
+		// there should now be 5 items in the list
+		expect(listItemCount).to.equal(5);
+
+		$(helloWorld.jqDom.find(".list-item-test")[0]).click();
+
+		expect(helloWorld.data.dummy_field_2).to.equal("foobar test");
+
+	});
+
 
 	it('Destroy a component.', () => {
 		helloWorld.destroy();

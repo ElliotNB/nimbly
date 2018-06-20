@@ -24,6 +24,19 @@ var ListItemComp = function($,Mustache,TXMBase) {
 			super("ListItemComp", defaults, data || {}, options || {});
 		};
 
+		_render() {
+
+			var self = this;
+
+			var jqDom = $(Mustache.render(this.templates["t4m_template_3"], null));
+
+			jqDom.on("click", function() {
+				self.data.dummy_field_2 = "foobar test";
+			});
+
+			return jqDom;
+		};
+
 		_fetchDummyData(resolve, reject) {
 			var self = this;
 			setTimeout(function() {

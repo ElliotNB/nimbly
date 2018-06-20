@@ -13,12 +13,13 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 						Set your name:
 						<input type="text" value="" class="user_name_text"> <small>this.data.user_name = $(this).val();</small>
 					</p>
-					<p>
+					<div class="list_container">
 						List item test:
 						<ul is="repeat-list">
 							<li is="list-item-test">hello world</li>
 						</ul>
-					</p>
+						<a href="javascript:void(0);" class="add_list_item">+ Add item</a>
+					</div>
 					<person-data></person-data>
 					<p>START</p>
 					<repeat-person-data>
@@ -39,6 +40,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 		,"uiBindings":{
 			"user_name":[".hello_user_container"]
 			,"dummy_field":[".throw_error_dupe"]
+			,"list_item_count":[".list_container"]
 		}
 		,"dataBindings":{
 			"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]}
@@ -50,6 +52,8 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 			,"birth_date":null
 			,"admit_date":null
 			,"dummy_field":"foobar"
+			,"list_item_count":4
+			,"dummy_field_2":null
 		}
 		,"delayInit":false
 	};
@@ -70,12 +74,11 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 				this.registerChild([temp], "repeat-person-data");
 			}
 
-			var i = 4;
+			var i = this.data.list_item_count;
 			while (i--) {
 				var listItem = new ListItemComp(this.data,null);
 				this.registerChild([listItem], "repeat-list");
 			}
-			
 		};
 
 		_render() {
@@ -101,6 +104,12 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 
 			jqDom.find(".load_next_patient_btn").on("click", function() {
 				self.data.person_id = 5555555;
+			});
+
+			jqDom.find(".add_list_item").on("click", function() {
+				self.data.list_item_count = self.data.list_item_count + 1;
+				var listItem = new ListItemComp(self.data,null);
+				self.registerChild([listItem], "repeat-list");
 			});
 
 			return jqDom;
