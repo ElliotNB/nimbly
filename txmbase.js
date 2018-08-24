@@ -435,6 +435,16 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 	constructor.prototype.init = function() {
 
 		var self = this;
+		
+		// run a quick sanity check, verify that the dataBindings defined by the component refer to actual methods on the component
+		// if they don't exist, then we want to throw a warning notifying the developer of the potential misconfiguration
+		for (var dataBinding in this.dataBindings) {
+			for (var b = 0; b < this.dataBindings[dataBinding].methods.length; b++) {
+				if (typeof this[this.dataBindings[dataBinding].methods[b]] !== "function") {
+					throw new Error("TXMBase::init cannot continue. Please review the dataBindings on class "+self.className+". The method "+this.dataBindings[dataBinding].methods[b]+" does not exist or is not a function.");
+				}
+			}
+		}
 
 		// this is where we'll store 'active promises'. active promises must be resolved before the component renders for the first time
 		var listActivePromises = [];

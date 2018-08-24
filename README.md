@@ -167,7 +167,7 @@ The full list of component settings is as follows:
 }
 ```
 
-9. **`delayInit`** - Boolean, optional, if set to true, then we do not fire off the _fetch* methods defined in the initList automatically when the component is initialized -- we would have do it manually at a later time using the this.init() method.
+9. **`delayInit`** - Boolean, optional, defaults to true. If true, then we do not fire off the _fetch* methods defined in the initList automatically when the component is initialized -- we would have do it manually at a later time using the this.init() method.
 
 # Component classes
 
