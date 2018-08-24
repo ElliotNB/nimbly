@@ -143,6 +143,8 @@ The full list of component settings is as follows:
 }
 ```
 
+**Note:** `uiBindings` do not take effect until the component has initialized (i.e., `this.initialized === true). This prevents `this.data` modifications in the constructor from triggering UI refreshes.
+
 7. **`dataBindings`** - Object, optional, key value pairs that define what data `fetch` methods should be invoked when specified data changes occur. Follows the same logic as `uiBindings` above, except that instead of specifying portions of the component to refresh, the value specifies which `fetch` methods should be invoked and whether or not we should delay refreshing the component until the fetch method returns. Example:
 
 ```javascript
@@ -154,6 +156,8 @@ The full list of component settings is as follows:
 	,"new_issue.save_issue":{"delayRefresh": false,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
 }
 ```
+
+**Note:** `dataBindings` do not take effect until the component has initialized (i.e., `this.initialized === true). This prevents `this.data` modifications in the constructor from triggering data retrievals.
 
 8. **`data`** - Object, required, this is the default data passed into the component. often times this data is just null because it must first be populated by the _fetch* methods defined in the `initList` above. Example:
 
