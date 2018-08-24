@@ -906,11 +906,29 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 					if (this._refreshList.length > 1) {
 						var a = this._refreshList.length;
 						while (a--) {
-							var domCurr = this.jqDom.find(this._refreshList[a])[0];
+							
+							var jqCurr = this.jqDom.find(this._refreshList[a]);
+							
+							// verify that we were able to find a matching target for the insertion target (uiBinding)
+							// if we did not find a target, then that means the uiBinding doesn't match anything in the 
+							// component which indicates a *possible* misconfiguration
+							if (jqCurr.length === 0) {
+								console.warn("Did not find a match for the selector '"+this._refreshList[a]+"'. Please review the uiBindings for class '"+this.className+"'.");
+								continue;
+							}
+							
+							var domCurr = jqCurr[0];
+
 							var b = this._refreshList.length;
 							while (b--) {
 								if (a !== b) {
-									var domCheck = this.jqDom.find(this._refreshList[b])[0];
+									var jqCheck = this.jqDom.find(this._refreshList[b]);
+									
+									// if the selector didn't find a match in the current component DOM, then we continue to 
+									// avoid throwing an error below (we've already thrown a warning above)
+									if (jqCheck.length === 0) continue;
+									
+									var domCheck = jqCheck[0];
 									if (domCheck.contains(domCurr)) {
 										this._refreshList.splice(a,1);
 										break;

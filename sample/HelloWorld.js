@@ -38,7 +38,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 		,"loadingTemplate":`<div>Loading...</div>`
 		,"initList":[{"method":"_fetchPatient","preventRender":true}]
 		,"uiBindings":{
-			"user_name":[".hello_user_container"]
+			"user_name":[".hello_user_container",".non_existent_class_test"]
 			,"dummy_field":[".throw_error_dupe"]
 			,"list_item_count":[".list_container"]
 		}
