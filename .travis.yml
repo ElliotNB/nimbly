@@ -4,6 +4,3 @@ node_js:
 before_script:
   - npm install
 script: gulp test
-cache:
-  directories:
-    - "node_modules"

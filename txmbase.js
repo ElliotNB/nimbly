@@ -662,9 +662,40 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 
 	constructor.prototype._renderWithChildren = function() {
 
-		var jqDom = this._render();
+	//	var jqDom = this._render();
+	//
+	//	var insertedChildren = this._insertChildren(jqDom);
 
-		var insertedChildren = this._insertChildren(jqDom);
+
+		// if the component hasn't been initialized and there's no initialization in-progress,
+		// then we need to initialize it before attempting a render
+		if (this.initialized == false && this.pendingInit == false) this.init();
+
+		// if the initialization is in progress, then render the 'loading' display
+		if (this.initialized == false && this.pendingInit == true) {
+
+			// if the component has defined a loading render method, then we use that first
+			if (typeof this._renderLoading === "function") {
+				var jqDom = this._renderLoading();
+			} else {
+				var jqDom = $(Mustache.render(this.loadingTemplate, null));
+			}
+
+		// else the component is initialized and ready for the standard render
+		} else {
+
+			var jqDom = this._render();
+
+			// verify that the component ._render method correctly returned a jQuery-referenced HTMLElement
+			if (!(jqDom.length > 0 && jqDom instanceof $ && jqDom[0] instanceof HTMLElement)) {
+				throw new Error(this.className + "._renderWithChildren() cannot continue. Component ._render() method must return a jQuery-referenced DOM element. Example: $('<div>hello world</div>');");
+			}
+
+			// insert (if any) child components that have been registered to this component
+			var insertedChildren = this._insertChildren(jqDom);
+
+		}
+
 
 		return {
 			"elmt": jqDom
