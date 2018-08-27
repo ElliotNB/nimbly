@@ -1,93 +1,26 @@
-/*	Class: TXMBase
-
-		Proposed base class for TransformativeMed web components. The objectives of the base class are as follows:
-			1. Provide a common structure and organization for child components to follow.
-			2. Reduce repetitive 'boiler plate' code contained in the child components.
-			3. Encourage adoption of best practices and functionality of modern JS development and frameworks (e.g., templating, one-way data binding, no explicit DOM manipulations, etc).
-			4. Reduce level of effort required by non-author devs to understand and maintain components.
-			5. Allow for easy re-factors of the legacy TransformativeMed code base.
-
-		It is expected that this base class will be expanded to accomodate the needs of different web applications. The base class code below should therefore
-		be considered 'core functionality' -- it is entirely allowable to expand upon, but not overwrite, the methods and properties below.
-
-		In order to make use of this base class, child components must extend the base class in this manner (where CMAddTask is the name of the child component class):
-
-			// Derived from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-			CMAddTask.prototype = Object.create(TXMBase.prototype);
-			CMAddTask.prototype.constructor = CMAddTask;
-
-	Parameters:
-
-		className - String, the name of the child component class (e.g., CMAddTask) that instantiated the base class. This is useful for debugging when the error occurs
-					inside the base class. Logging the className will tell you which class instantiated the base class and generated the error.
-
-		defaults - Object, a variety of default options and preferences, see below:
-			{
-				// Array of strings, where each item is either a string of the template itself or an element ID for a <script> tag containing the content of the template (for ES5 support).
-				"templates":["t4m_tpl_add_task_list","t4m_tpl_add_task_list_item"]
-
-				// String, template content OR an element identifier of the template used to display a loading spinner or loading message. If none is supplied, then an empty <div></div> is used.
-				,"loadingTemplate":"t4m_tpl_component_loading"
-
-				// Array of objects,
-					- method: the method that should be invoked when the component initializes itself
-					- preventRender: optional, set to true if the method must return before the component can render itself, else the component can render before the method returns
-					- condition: optional, must return true if the method is to be executed. if not supplied, then the method also executes. if false, then the method is not executed.
-				,"initList":[{"method":"_fetchTeamCoverage"
-
-								,"preventRender":true
-
-								// only fetch the list of teams for this service if a team list was
-								// not provided to the constructor during initialization
-								,"condition":function() {
-									return (self.data.teams.length == 0 && typeof self.data.code !== "number");
-								}
-							}]
-
-				// Object, data is all the data that is required for the component to render itself. by default, data will most often be set to null because the component must first
-				// retrieve and store the data it needs to render via the this.init() method. however, options.data does allow the user to pre-populate data.
-				,"data":null
-
-				// Object, dictates what part of the rendered component should be updated when a given data change occurs. Each property on this object
-				// corresponds to a property on this.data. In the example below, a change to data.participant_list will trigger refreshes of .t4m-jq-cm-convo-participant-container and
-				// .t4m-jq-cm-create-convo-send-btn while a change to person_id will trigger a full refresh of the entire component. Please see the this.uiBindings property below for more details.
-				,uiBindings":{
-						"participant_list":[".t4m-jq-cm-convo-participant-container",".t4m-jq-cm-create-convo-send-btn"]
-						,"person_id":true
-					}
-
-				// Object, dictates which 'fetch' methods should be executed when a change occurs to a given value on this.data.
-				// In the example below, a change to this.data.person_id will trigger the method this._fetchPersonList. The fetch methods are defined by the
-				// child component. The "delayRefresh":true tells the component that we should not refresh the component until the fetch method completes and
-				// the new data has been retrieved. It will also trigger a modal loading cover/spinner preventing any user input while the new data is being retrieved.
-				,"dataBindings":{
-
-					// if person_id changes, invoke this._fetchPersonList, true means that will blur component while data is fetched
-					"person_id":{
-						"methods":["_fetchPersonList"]
-						,"delayRefresh":true
-					}
-				}
-
-				// If delayInit is set to true, then the component will not automatically initialize itself (i.e., fetch data) in the constructor.
-				,"delayInit":false
-			}
-
-		data - Object, this is the data that the component uses to render itself. The component should require no other data to render itself. During the
-				initialization of the component, data is often just null -- the data must first be retrieved via XHR (see the _fetch* methods). But even if the data is null,
-				it's helpful to map out here what values are expected to be populated later. This gives other developers a blueprint of what model data this
-				component works with. Example:
-
-				{
-					"selected":false  // true if this team is selected
-					,"full_name": null //"Berger-ONA, TTJessica",
-					,"person_id": null // 14850867.000000
-					,"mobile_messaging_enabled_ind": null // 0
-					,"num_patients": null // 6
-				}
-
-		options - Object, optional, overrides the defaults by merging on top of it.
-*/
+/*
+ * 	TXMBase
+ *	Version 0.0.2
+ * 	https://github.com/transformativemed/txmbase
+ *
+ * 	Licensed under the MIT license:
+ * 	http://www.opensource.org/licenses/MIT
+ *
+ *	TXMBase is the proposed base class for TransformativeMed web components. The objectives of TXMBase are as follows:
+ *
+ *	1. Provide a common structure and organization for child components to follow.
+ *	2. Reduce repetitive 'boiler plate' code contained in the child components.
+ *	3. Encourage adoption of best practices and functionality of modern JS development and frameworks:
+ *		- Templating.
+ *		- One-way data binding.
+ *		- State management.
+ *		- Elimination of explicit DOM manipulations.
+ *		- Dependency injection.
+ *		- Automated unit testing.
+ *	4. Reduce effort level for non-author devs to understand and maintain components.
+ *	5. Allow for easy re-factors of the jQuery-driven TransformativeMed legacy code base.
+ *	6. Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
+ */
 var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 
 	if (typeof $ === "undefined") throw new Error("TXMBase requires jQuery 1.9+.");
@@ -268,7 +201,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				this.loadingTemplate = this.options.loadingTemplate;
 			}
 		} else {
-			this.loadingTemplate = "<div></div>";
+			this.loadingTemplate = "<div class=\"default_txmbase_loading_template\"></div>";
 		}
 
 		/*	Property: this.uiBindings

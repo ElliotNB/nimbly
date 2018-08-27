@@ -9,7 +9,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 			,"dummy_field":[".throw_error_dupe"]
 		}
 		,"dataBindings":{
-			"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]} 
+			"person_id":{"delayRefresh":true,"methods":["_fetchNewPatient"]} 
 		}
 		,"data":{
 			"user_name":""

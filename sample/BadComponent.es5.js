@@ -10,7 +10,7 @@ var BadComponent = function($,Mustache,TXMBase) {
 			,"birth_date":true
 		}
 		,"dataBindings":{
-			"bad_request":{"delay_refresh":false,"methods":["_fetchBadData"]} 
+			"bad_request":{"delayRefresh":false,"methods":["_fetchBadData"]} 
 		}
 		,"data":{
 			"patient_name":null

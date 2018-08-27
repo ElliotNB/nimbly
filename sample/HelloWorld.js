@@ -20,6 +20,8 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 						</ul>
 						<a href="javascript:void(0);" class="add_list_item">+ Add item</a>
 					</div>
+					<br>
+					<div class="person_id_container">Person ID: {{person_id}}</div>
 					<person-data></person-data>
 					<p>START</p>
 					<repeat-person-data>
@@ -41,9 +43,10 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 			"user_name":[".hello_user_container",".non_existent_class_test"]
 			,"dummy_field":[".throw_error_dupe"]
 			,"list_item_count":[".list_container"]
+			,"person_id":[".person_id_container"]
 		}
 		,"dataBindings":{
-			"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]}
+			"person_id":{"delayRefresh":true,"methods":["_fetchNewPatient"]}
 		}
 		,"data":{
 			"user_name":""
@@ -90,6 +93,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 				,"patient_name":this.data.patient_name
 				,"birth_date":this.data.birth_date
 				,"admit_date":this.data.admit_date
+				,"person_id":this.data.person_id
 			};
 
 			var jqDom = $(Mustache.render(this.templates["t4m_template_1"], tplData));

@@ -20,7 +20,7 @@ var PersonData = function($,Mustache,TXMBase) {
 			,"chained_update":true
 		}
 		,"dataBindings":{
-			"chained_request":{"delay_refresh":false,"methods":["_fetchDummyData"]} 
+			"chained_request":{"delayRefresh":false,"methods":["_fetchDummyData"]} 
 		}
 		,"data":{
 			"patient_name":null
