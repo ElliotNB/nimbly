@@ -36,8 +36,9 @@ describe('HelloWorld component test suite.', function() {
 
 	// initialize the base class and our components with all required dependencies
 	var TXMBase = require("../../txmbase.js")($,Mustache,ObservableSlim,Object);
+	var GrandChildComp = require("../GrandChildComp.js")($,Mustache,TXMBase);
 	var PersonData = require("../PersonData.js")($,Mustache,TXMBase);
-	var ListItemComp = require("../ListItemComp.js")($,Mustache,TXMBase);
+	var ListItemComp = require("../ListItemComp.js")($,Mustache,TXMBase,GrandChildComp);
 	var BadComponent = require("../BadComponent.js")($,Mustache,TXMBase);
 	var HelloWorld = require("../HelloWorld.js")($,Mustache,TXMBase,PersonData,ListItemComp);
 	var helloWorld = new HelloWorld();
@@ -66,6 +67,11 @@ describe('HelloWorld component test suite.', function() {
 		var charliePresent = helloWorld.jqDom.find(".patient_data_container").html().indexOf("Charlie Smith");
 		expect(charliePresent).to.be.above(-1);
 		expect(helloWorld._data.patient_name).to.equal("Charlie Smith");
+	});
+	
+	it('Verify that grand child components (child of a child) show up correctly.', () => {
+		var grandChildPresent = helloWorld.jqDom.find(".list-item-test").html().indexOf("grand child component");
+		expect(grandChildPresent).to.be.above(-1);
 	});
 
 	it('Set a new user name.', async () => {

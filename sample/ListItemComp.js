@@ -1,10 +1,10 @@
-var ListItemComp = function($,Mustache,TXMBase) {
+var ListItemComp = function($,Mustache,TXMBase,GrandChildComp) {
 
 	const defaults = {
 		"tagName":"list-item-test"
 		,"templates":{
 			"t4m_template_3":`
-				<li class="list-item-test">testing list items</li>
+				<li class="list-item-test">testing list items <grand-child></grand-child></li>
 			`
 		}
 		,"loadingTemplate":null
@@ -22,6 +22,9 @@ var ListItemComp = function($,Mustache,TXMBase) {
 
 		constructor(data, options) {
 			super("ListItemComp", defaults, data || {}, options || {});
+			
+			var grandChild = new GrandChildComp();
+			this.registerChild(grandChild);
 		};
 
 		_render() {
@@ -50,9 +53,9 @@ var ListItemComp = function($,Mustache,TXMBase) {
 };
 
 if (typeof module === "undefined") {
-	window["ListItemComp"] = ListItemComp($,Mustache,TXMBase);
+	window["ListItemComp"] = ListItemComp($,Mustache,TXMBase,GrandChildComp);
 } else {
-	module.exports = function($,Mustache,TXMBase) {
-		return ListItemComp($,Mustache,TXMBase);
+	module.exports = function($,Mustache,TXMBase,GrandChildComp) {
+		return ListItemComp($,Mustache,TXMBase,GrandChildComp);
 	};
 }
