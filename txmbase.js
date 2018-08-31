@@ -434,8 +434,8 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			this.pendingFetchCount++;
 			this.pendingInit = true;
 			// Create a Promise all that resolves when all of the promises resolve
-			Promise.all(listActivePromises).then(function() {
-
+			var initListPromise = Promise.all(listActivePromises).then(function() {
+				initListPromise.done = true;
 				self.initialized = true;
 				self.pendingInit = false;
 				self._refreshList = true;
@@ -451,7 +451,13 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				// the promises have all been fulfilled so we decrement the outstanding promise count
 				self.pendingFetchCount--;
 
-			}).catch(function(failedPromise) {console.error(failedPromise);});
+			}).catch(function(failedPromise) {initListPromise.done = true; console.error(failedPromise);});
+			
+			setTimeout(function() {
+				if (initListPromise.done !== true) {
+					console.warn(self.className + " initList methods have not resolved after 15 seconds. Please ensure that your initList methods properly resolve or reject.");
+				}
+			}, 15000);
 
 		// else there's no data that we need to initialize so we can mark the component as initialized
 		} else {
@@ -463,9 +469,16 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 
 		if (listPassivePromises.length > 0) {
 			this.pendingFetchCount++;
-			Promise.all(listPassivePromises).then(function() {
+			var initListPassivePromises = Promise.all(listPassivePromises).then(function() {
+				initListPassivePromises.done = true;
 				self.pendingFetchCount--;
-			}).catch(function(failedPromise) {console.error(failedPromise);});
+			}).catch(function(failedPromise) {initListPassivePromises.done = true; console.error(failedPromise);});
+
+			setTimeout(function() {
+				if (initListPassivePromises.done !== true) {
+					console.warn(self.className + " initList methods have not resolved after 15 seconds. Please ensure that your initList methods properly resolve or reject.");
+				}
+			}, 15000);
 		}
 	};
 
@@ -527,7 +540,9 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			};
 
 			// Create a Promise all that resolves when all of the fetch promises resolve
-			Promise.all(listPromises).then(function() {
+			var dataBindingPromise = Promise.all(listPromises).then(function() {
+
+				dataBindingPromise.done = true;
 
 				// the fetches have all completed and the component is now safe to refresh UI, so we can turn off delayRefresh
 				self.delayRefresh = false;
@@ -542,7 +557,14 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 
 				self.pendingFetchCount--;
 
-			}).catch(function(failedPromise) {console.error(failedPromise);});
+			}).catch(function(failedPromise) {dataBindingPromise.done = true; console.error(failedPromise);});
+
+			setTimeout(function() {
+				if (dataBindingPromise.done !== true) {
+					console.warn(self.className + " dataBinding methods have not resolved after 15 seconds. Please ensure that your dataBinding methods properly resolve or reject.");
+				}
+			}, 15000);
+
 		}
 
 	};
