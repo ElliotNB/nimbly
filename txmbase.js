@@ -148,6 +148,12 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				Helps us avoid a situation where a UI refresh is processed immediately before a fetch method completes which would generate a UI refresh of its own.
 		*/
 		this.delayRefresh = false;
+		
+		/*	Property: this._renderRunning
+				Boolean, set to true when the component's _render() method is running. This boolean is used to catch this.data mutations while the component is rendering.
+				Such mutations are liable to result in an infinite loop via uiBindings and are disallowed.
+		*/
+		this._renderRunning = false;
 
 		this._cleanUpChildren = null;
 
@@ -258,12 +264,18 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				Note for IE11 users: all properties must be defined at the time of initialization else their changes will not be observed.
 		*/
 		this.data = ObservableSlim.create(this._data, false, function(changes) {
-
+		
+			// if the component is attempting to modify this.data from inside the ._render method, then we need to throw an error.
+			// doing so is a bad practice -- it's liable to result in an infinite loop
+			if (self._renderRunning === true) {
+				throw new Error(self.className + "._render() is attempting to modify this.data. Mutating this.data while rendering is disallowed because such mutations are liable to generate infinite loops via uiBindings.");
+			}
+		
 			// we don't process any changes until the component has marked itself as initialized, this prevents
 			// a problem where the instantiation of the base class and passing in default this.data values triggers a change
 			// and refresh before anything has even loaded
 			if (self.initialized == true) {
-
+			
 				// by default any qualified fetch requests will not cause a refresh delay
 				var delayRefresh = false;
 
@@ -568,7 +580,9 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 
 			// else the component does have pending changes or has not been fully rendered yet -- so we must invoke the normal .render() method.
 			} else {
+				this._renderRunning = true;
 				var jqDom = this._render();
+				this._renderRunning = false;
 
 				// verify that the component ._render method correctly returned a jQuery-referenced HTMLElement
 				if (!(jqDom.length > 0 && jqDom instanceof $ && jqDom[0] instanceof HTMLElement)) {
@@ -619,7 +633,9 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		// else the component is initialized and ready for the standard render
 		} else {
 
+			this._renderRunning = true;
 			var jqDom = this._render();
+			this._renderRunning = false;
 
 			// verify that the component ._render method correctly returned a jQuery-referenced HTMLElement
 			if (!(jqDom.length > 0 && jqDom instanceof $ && jqDom[0] instanceof HTMLElement)) {
