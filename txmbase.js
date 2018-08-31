@@ -574,6 +574,13 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				if (!(jqDom.length > 0 && jqDom instanceof $ && jqDom[0] instanceof HTMLElement)) {
 					throw new Error(this.className + ".render() cannot continue. Component ._render() method must return a jQuery-referenced DOM element. Example: $('<div>hello world</div>');");
 				}
+				
+				// verify that the component template has a single parent element that wraps the entire component. we need a single element to encapsulate the component
+				// for later portions of the framework that will search for child components with .find and .replaceWith -- those commands break down if multiple elements 
+				// are returned by the ._render method
+				if (jqDom.length > 1) {
+					throw new Error(this.className + ".render() cannot continue. "+this.className+"._render() must return a single jQuery-referenced DOM element -- instead it returned "+jqDom.length+" elements. Ensure that your component template is wrapped (encapsulated) by a single element.");
+				}
 
 				// insert (if any) child components that have been registered to this component
 				var insertedChildren = this._insertChildren(jqDom);
@@ -594,11 +601,6 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 	};
 
 	constructor.prototype._renderWithChildren = function() {
-
-	//	var jqDom = this._render();
-	//
-	//	var insertedChildren = this._insertChildren(jqDom);
-
 
 		// if the component hasn't been initialized and there's no initialization in-progress,
 		// then we need to initialize it before attempting a render
@@ -622,6 +624,13 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			// verify that the component ._render method correctly returned a jQuery-referenced HTMLElement
 			if (!(jqDom.length > 0 && jqDom instanceof $ && jqDom[0] instanceof HTMLElement)) {
 				throw new Error(this.className + "._renderWithChildren() cannot continue. Component ._render() method must return a jQuery-referenced DOM element. Example: $('<div>hello world</div>');");
+			}
+			
+			// verify that the component template has a single parent element that wraps the entire component. we need a single element to encapsulate the component
+			// for later portions of the framework that will search for child components with .find and .replaceWith -- those commands break down if multiple elements 
+			// are returned by the ._render method
+			if (jqDom.length > 1) {
+				throw new Error(this.className + "._renderWithChildren() cannot continue. "+this.className+"._render() must return a single jQuery-referenced DOM element -- instead it returned "+jqDom.length+" elements. Ensure that your component template is wrapped (encapsulated) by a single element.");
 			}
 
 			// insert (if any) child components that have been registered to this component
@@ -871,7 +880,6 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 						}
 					}
 
-					//var jqNewComponent = this._render();
 					var renderResult = this._renderWithChildren();
 					var jqNewComponent = renderResult.elmt;
 					var insertedChildren = renderResult.insertedChildren;
@@ -892,7 +900,6 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 					}
 
 					// insert (if any) child components that have been registered to this component
-					//this._insertChildren(this.jqDom);
 					var i = insertedChildren.length;
 					while (i--) {
 						if (this.jqDom[0].contains(insertedChildren[i].elmt[0])) {
