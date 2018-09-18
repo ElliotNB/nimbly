@@ -1087,6 +1087,9 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 	*/
 	constructor.prototype.destroy = function() {
 
+		// invoke the 'destroy' lifecycle method on the class if one has been defined
+		if (typeof this._destroy === "function") this._destroy();
+	
 		// destroy the child components -- we've just destroyed the parent component so we don't need to track the child components any longer
 		this.eachChildComponent(function(childComponent, sectionName) {
 			childComponent.destroy();
