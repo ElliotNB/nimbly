@@ -4,3 +4,5 @@ node_js:
 before_script:
   - npm install
 script: gulp test
+notifications:
+  slack: transformativemed:0JUkhBnKaiZ1vARU9rDe9S4o
