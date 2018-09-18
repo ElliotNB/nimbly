@@ -69,6 +69,13 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		}
 		return template;
 	};
+	
+	var isValidComponent = function(component) {
+		if (typeof component.render !== "function" || typeof component.init !== "function" || typeof component.isReady !== "function") {
+			return false;
+		}
+		return true;
+	};
 
 	/*	Constructor:
 		Initializes an object instance of T4M component base class.
@@ -626,6 +633,10 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 					insertedChildren[i].comp.jqDom = insertedChildren[i].elmt;
 				};
 
+				if (typeof this._renderFinalize === "function") {
+					this._renderFinalize(jqDom);
+				}
+				
 				// the component has now been fully rendered, so mark the initial render boolean as true
 				this.initRendered = true;
 			}
@@ -673,6 +684,10 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 
 			// insert (if any) child components that have been registered to this component
 			var insertedChildren = this._insertChildren(jqDom);
+			
+			if (typeof this._renderFinalize === "function") {
+				this._renderFinalize(jqDom);
+			}
 
 		}
 
@@ -948,10 +963,6 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 					// component has been refreshed, so we can reset the pending list of refresh changes
 					this._refreshList = [];
 
-					//if (typeof this._postRefresh === "function") {
-					//	this._postRefresh(false);
-					//}
-
 				// else if this._refreshList has been set to true (boolean) we must refresh the entire component
 				} else if (this._refreshList == true) {
 
@@ -1031,6 +1042,20 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			sectionName - optional, specifies the tag name of the repeatable section that a set of child components should be added to.
 	*/
 	constructor.prototype.registerChild = function(childComponent, sectionName) {
+		
+		// verify that the childComponent is a valid component
+		if (childComponent instanceof Array) {
+			var i = childComponent.length;
+			while (i--) {
+				if (isValidComponent(childComponent[i]) === false) {
+					throw new Error("TXMBase cannot register this component. It is not a valid TXMBase component.");
+				}
+			};
+		} else {
+			if (isValidComponent(childComponent) === false) {
+				throw new Error("TXMBase cannot register this component. It is not a valid TXMBase component.");
+			}
+		}
 
 		// if a section name was not specified (meaning that the child component does not belong to a repeatable section
 		// then we simply assign the component to the default section
@@ -1072,7 +1097,10 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		ObservableSlim.remove(this.data);
 
 		// if our component has been rendered, then remove it from the DOM (if it's even still in the DOM)
-		if (this.jqDom !== null) this.jqDom.remove();
+		if (this.jqDom !== null) {
+			this.jqDom.remove();
+			this.jqDom = null;
+		}
 
 	};
 
