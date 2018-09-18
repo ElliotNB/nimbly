@@ -155,21 +155,20 @@ describe('HelloWorld component test suite.', function() {
 
 	});
 
+	it('Trigger a manual refresh.', async() => {
 
+		helloWorld.refresh();
+		whenReady(helloWorld);
+		expect(helloWorld.jqDom.find(".hello_user_container").length).to.equal(1);
+
+	});
+	
 	it('Destroy a component.', () => {
 		helloWorld.destroy();
 
 		expect(helloWorld.childComponents["default"].length).to.equal(0);
 		expect($(global.document).find(".hello_user_container").length).to.equal(0);
 		should.not.exist(helloWorld.childComponents["repeat-person-data"]);
-
-	});
-
-	it('Trigger a manual refresh.', async() => {
-
-		helloWorld.refresh();
-		whenReady(helloWorld);
-		expect(helloWorld.jqDom.find(".hello_user_container").length).to.equal(1);
 
 	});
 
