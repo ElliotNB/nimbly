@@ -641,6 +641,10 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				this.initRendered = true;
 			}
 		}
+		
+		// now that we've rendered the component, reset the refresh list back to an empty array, otherwise it'll be left to true
+		// and the next state mutation on the component (or parent component) will trigger a full refresh of this component
+		this._refreshList = [];
 
 		this.jqDom = jqDom;
 
@@ -1013,15 +1017,18 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			var a = this.childComponents[sectionName].length;
 			while (a--) {
 				if (sectionName === "default") {
-					handler(this.childComponents[sectionName][a], sectionName, function() {
-						self.childComponents[sectionName][a].destroy();
-						 self.childComponents[sectionName].splice(a, 1);
+					handler(this.childComponents[sectionName][a], sectionName, function(destroyComp) {
+						
+						// by default, we destroy the component when it is removed. destroyComp can be set to false when you just want to unregister the component
+						if (destroyComp === true || typeof destroyComp === "undefined") self.childComponents[sectionName][a].destroy();
+						self.childComponents[sectionName].splice(a, 1);
 					});
 				} else {
 					var b = this.childComponents[sectionName][a].length;
 					while (b--) {
-						handler(this.childComponents[sectionName][a][b], sectionName, function() {
-							self.childComponents[sectionName][a][b].destroy();
+						handler(this.childComponents[sectionName][a][b], sectionName, function(destroyComp) {
+							// by default, we destroy the component when it is removed. destroyComp can be set to false when you just want to unregister the component
+							if (destroyComp === true || typeof destroyComp === "undefined") self.childComponents[sectionName][a][b].destroy();
 							self.childComponents[sectionName][a].splice(b, 1);
 							if (self.childComponents[sectionName][a].length === 0) self.childComponents[sectionName].splice(a, 1);
 							if (self.childComponents[sectionName].length === 0) delete self.childComponents[sectionName];
@@ -1087,6 +1094,8 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 	*/
 	constructor.prototype.destroy = function() {
 
+		var self = this;
+	
 		// invoke the 'destroy' lifecycle method on the class if one has been defined
 		if (typeof this._destroy === "function") this._destroy();
 	
@@ -1094,7 +1103,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		this.eachChildComponent(function(childComponent, sectionName) {
 			childComponent.destroy();
 		});
-		this.childComponents = {"default":[]};
+		
 
 		// Remove our data proxy from the ObservableSlim singleton. No further modifications to this.data will refreshes or fetches.
 		ObservableSlim.remove(this.data);
@@ -1104,6 +1113,28 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			this.jqDom.remove();
 			this.jqDom = null;
 		}
+		
+
+		// null out all object references to help release memory, but do so only after the component has settled in order
+		// to avoid generating errors if, for example, ajax requests haven't returned yet
+		var maxWait = 20;
+		var clearCheck = setInterval(function() {
+			maxWait--;
+			if (self.isReady() || maxWait === 0) {
+				self.childComponents = null;
+				self.data = null;
+				self._data = null;
+				self.templates = null;
+				self.uiBindings = null;
+				self.dataBindings = null;
+				self.initList = null;
+				self.showLoadMask = null;
+				self.hideLoadMask = null;
+				self._refreshList = null;
+				clearInterval(clearCheck);
+			}
+		}, 1000);
+
 
 	};
 
@@ -1119,7 +1150,12 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		this.eachChildComponent(function(childComponent, sectionName) {
 			if (childComponent.isReady() === false) allChildrenReady = false;
 		});
-		return (allChildrenReady === true && this._refreshList.length === 0 && this.pendingFetchCount === 0 && this.pendingInit === false);
+		
+		var noPendingRefreshes = (this._refreshList === null || this._refreshList.length === 0);
+		var noPendingFetches = (this.pendingFetchCount === null || this.pendingFetchCount === 0);
+		var noPendingInit = (this.pendingInit === false);
+		
+		return (allChildrenReady === true && noPendingRefreshes && noPendingFetches && noPendingInit);
 	};
 
 	return constructor;

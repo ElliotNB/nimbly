@@ -163,12 +163,17 @@ describe('HelloWorld component test suite.', function() {
 
 	});
 	
-	it('Destroy a component.', () => {
+	it('Destroy a component.', (done) => {
 		helloWorld.destroy();
 
-		expect(helloWorld.childComponents["default"].length).to.equal(0);
+		// during component destruction, the compoent is immediately removed from the DOM
 		expect($(global.document).find(".hello_user_container").length).to.equal(0);
-		should.not.exist(helloWorld.childComponents["repeat-person-data"]);
+		
+		// but the properties aren't nulled out until later, when isReady returns true (checked via setInterval @ 1 second iteration)
+		setTimeout(function() {
+			should.not.exist(helloWorld.childComponents);
+			done();
+		},2000);
 
 	});
 
