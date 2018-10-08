@@ -25,7 +25,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 
 	if (typeof $ === "undefined") throw new Error("TXMBase requires jQuery 1.9+.");
 	if (typeof Mustache === "undefined") throw new Error("TXMBase requires Mustache.");
-	if (typeof ObservableSlim === "undefined") throw new Error("TXMBase requires ObservableSlim 0.0.2+.");
+	if (typeof ObservableSlim === "undefined") throw new Error("TXMBase requires ObservableSlim 0.1.0+.");
 
 	var baseClassInstance = 0;
 
