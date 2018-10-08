@@ -1,7 +1,7 @@
 {
   "name": "txmbase",
   "description": "TXMBase is the proposed base class for TransformativeMed web components.",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "main": "txmbase.js",
   "devDependencies": {
     "babel-core": "6.26.0",

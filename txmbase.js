@@ -1,6 +1,6 @@
 /*
  * 	TXMBase
- *	Version 0.0.2
+ *	Version 0.0.3
  * 	https://github.com/transformativemed/txmbase
  *
  * 	Licensed under the MIT license:
