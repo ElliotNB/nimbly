@@ -1,4 +1,4 @@
-var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
+var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 
 	const defaults = {
 		"tagName":"hello-world"
@@ -61,7 +61,7 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 		,"delayInit":false
 	};
 
-	class componentClass extends TXMBase {
+	class componentClass extends Nimbly {
 
 		constructor(data, options) {
 			super("HelloWorld", defaults, data || {}, options || {});
@@ -152,9 +152,9 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData,ListItemComp) {
 };
 
 if (typeof module === "undefined") {
-	window["HelloWorld"] = HelloWorld($,Mustache,TXMBase,PersonData,ListItemComp);
+	window["HelloWorld"] = HelloWorld($,Mustache,Nimbly,PersonData,ListItemComp);
 } else {
-	module.exports = function($,Mustache,TXMBase,PersonData,ListItemComp) {
-		return HelloWorld($,Mustache,TXMBase,PersonData,ListItemComp);
+	module.exports = function($,Mustache,Nimbly,PersonData,ListItemComp) {
+		return HelloWorld($,Mustache,Nimbly,PersonData,ListItemComp);
 	};
 }

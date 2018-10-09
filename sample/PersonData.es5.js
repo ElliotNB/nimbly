@@ -1,4 +1,4 @@
-var PersonData = function($,Mustache,TXMBase) {
+var PersonData = function($,Mustache,Nimbly) {
 	var defaults = {
 		"tagName":"person-data"
 		,"templates":["t4m_template_2"]
@@ -24,9 +24,9 @@ var PersonData = function($,Mustache,TXMBase) {
 	};
 
 	var constructor = function(data, options) {
-		TXMBase.call(this,"PersonData", defaults, data || {}, options || {});
+		Nimbly.call(this,"PersonData", defaults, data || {}, options || {});
 	};
-	constructor.prototype = Object.create(TXMBase.prototype);
+	constructor.prototype = Object.create(Nimbly.prototype);
 	constructor.prototype.constructor = constructor;
 	
 	constructor.prototype._fetchDummyData = function(resolve, reject) {
@@ -41,9 +41,9 @@ var PersonData = function($,Mustache,TXMBase) {
 };
 
 if (typeof module === "undefined") {
-	window["PersonData"] = PersonData($,Mustache,TXMBase);
+	window["PersonData"] = PersonData($,Mustache,Nimbly);
 } else {
-	module.exports = function($,Mustache,TXMBase) {
-		return PersonData($,Mustache,TXMBase);
+	module.exports = function($,Mustache,Nimbly) {
+		return PersonData($,Mustache,Nimbly);
 	};
 }

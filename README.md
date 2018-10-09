@@ -2,7 +2,7 @@
 
 # Overview
 
-TXMBase is the proposed base class for TransformativeMed web components. The objectives of TXMBase are as follows:
+Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
 
 * Provide a common structure and organization for child components to follow.
 * Reduce repetitive 'boiler plate' code contained in the child components.
@@ -14,12 +14,12 @@ TXMBase is the proposed base class for TransformativeMed web components. The obj
     * Dependency injection.
     * Automated unit testing.
 * Reduce effort level for non-author devs to understand and maintain components.
-* Allow for easy re-factors of the jQuery-heavy TransformativeMed legacy code base.
+* Allow for easy re-factors of jQuery-heavy legacy code.
 * Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
 
 # Requirements
 
-TXMBase requires the following libraries:
+Nimbly requires the following libraries:
 
 * **[jQuery 1.9.0+](https://github.com/jquery/jquery)**
 * **[Mustache.js 2.0.0+](https://github.com/janl/mustache.js)**
@@ -27,7 +27,7 @@ TXMBase requires the following libraries:
 
 # Parameters
 
-The TXMBase constructor accepts four parameters, they are:
+The Nimbly constructor accepts four parameters, they are:
 
 1. **`className`** - String, required, the name of the child component class (e.g., HelloWorld) that instantiated the base class. This is useful for debugging when the error occurs inside the base class. Logging the className will tell you which class instantiated the base class and generated the error.
 
@@ -40,7 +40,7 @@ The TXMBase constructor accepts four parameters, they are:
 
 # Properties
 
-All TXMBase components have the following public properties:
+All Nimbly components have the following public properties:
 
 1. **`options`** - Object, the component default settings with any used-defined options merged over the top.
 
@@ -64,7 +64,7 @@ All TXMBase components have the following public properties:
 
 ## Public
 
-All TXMBase components have the following public methods:
+All Nimbly components have the following public methods:
 
 1. **`observe(fnChanges)`** - Allows external entities to observe changes that occur on the this.data property.
 	* *Parameters:*
@@ -89,11 +89,11 @@ All TXMBase components have the following public methods:
 
 ## Protected
 
-JavaScript does not support protected methods, but the following methods are **intended** to be used as protected methods. They should not be invoked externally, but they may be invoked within component class that extends the `TXMBase` base class.
+JavaScript does not support protected methods, but the following methods are **intended** to be used as protected methods. They should not be invoked externally, but they may be invoked within component class that extends the `Nimbly` base class.
 	
 1. **`registerChild(childComponent, sectionName)`** - When a component nests other components within it, we refer to the original component as the "parent component" and the nested component(s) as "child component(s)". In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our .refresh() method to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
 	* *Parameters:*
-		* `childComponent` - an instance of a component that extends this base class (TXMBase).
+		* `childComponent` - an instance of a component that extends this base class (Nimbly).
 		* `sectionName` - optional, if the child component belongs to a list (repeated section), then the `sectionName` should equal the custom tag name in the template that encloses the list.
 		
 	* *Returns:* Nothing.
@@ -108,9 +108,9 @@ JavaScript does not support protected methods, but the following methods are **i
 
 # Settings
 
-The `defaults` and `options` parameters are the two most significant parameters passed into the TXMBase constructor. Together they dictate how the component initializes itself, how the UI should update in response to data changes, what actions to take after data changes occur, what templates the component should use, etc.
+The `defaults` and `options` parameters are the two most significant parameters passed into the Nimbly constructor. Together they dictate how the component initializes itself, how the UI should update in response to data changes, what actions to take after data changes occur, what templates the component should use, etc.
 
-`defaults` is a plain JavaScript object that is the same for each component class that extends TXMBase -- it does not change per instance of the component. `options` however can change per instance of the component. `options` is intended to allow users the ability to customize the behavior or display of a component for a particular use case. When `options` is supplied to the `TXMBase` constructor function, `options` simply merges on top of (overwrites) the settings stored in `defaults`.
+`defaults` is a plain JavaScript object that is the same for each component class that extends Nimbly -- it does not change per instance of the component. `options` however can change per instance of the component. `options` is intended to allow users the ability to customize the behavior or display of a component for a particular use case. When `options` is supplied to the `Nimbly` constructor function, `options` simply merges on top of (overwrites) the settings stored in `defaults`.
 
 The full list of component settings is as follows:
 
@@ -175,7 +175,7 @@ The full list of component settings is as follows:
 
 # Component classes
 
-`TXMBase` is a base class that cannot function by itself. It must be extended by component classes (child classes) in order to be useful.
+`Nimbly` is a base class that cannot function by itself. It must be extended by component classes (child classes) in order to be useful.
 
 Component classes have their own set of methods that interact with the base class. Those methods are:
 
@@ -197,13 +197,13 @@ Component classes have their own set of methods that interact with the base clas
 
 ## Sample Component
 
-To see a live working example of a component built with TXMBase, please visit the **[Hello World component jsFiddle](https://jsfiddle.net/rh74dj6f/)**.
+To see a live working example of a component built with Nimbly, please visit the **[Hello World component jsFiddle](https://jsfiddle.net/rh74dj6f/)**.
 
 The code for the above jsFiddle is as follows:
 
 **JavaScript:**
 ```javascript
-class HelloWorld extends TXMBase {
+class HelloWorld extends Nimbly {
 
 	constructor(data, options) {
         
@@ -384,13 +384,13 @@ var issueList = new ITIssueList(this.data);
 this.registerChild(this.issueList);
 ```
 
-Registering a child component will enable TXMBase to handle component refreshes without ballooning memory usage and avoid unnecessary child component re-renders.
+Registering a child component will enable Nimbly to handle component refreshes without ballooning memory usage and avoid unnecessary child component re-renders.
 
 # IE11 Notes
 
 ## Proxy polyfill restrictions
 
-TXMBase relies on the Observable Slim library to observe changes to `this.data` and trigger `uiBindings` and `dataBindings`. The Observable Slim library in turn relies on ES6 `Proxy` to perform those observations. ES6 `Proxy` is supported by Chrome 49+, Edge 12+, Firefox 18+, Opera 36+ and Safari 10+, but it is not supported by IE11.
+Nimbly relies on the Observable Slim library to observe changes to `this.data` and trigger `uiBindings` and `dataBindings`. The Observable Slim library in turn relies on ES6 `Proxy` to perform those observations. ES6 `Proxy` is supported by Chrome 49+, Edge 12+, Firefox 18+, Opera 36+ and Safari 10+, but it is not supported by IE11.
 
 For IE11, the `Proxy` polyfill must be used. However, the polyfill does have limitations, notably:
 

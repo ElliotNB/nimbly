@@ -1,4 +1,4 @@
-var ListItemComp = function($,Mustache,TXMBase,GrandChildComp) {
+var ListItemComp = function($,Mustache,Nimbly,GrandChildComp) {
 
 	const defaults = {
 		"tagName":"list-item-test"
@@ -18,7 +18,7 @@ var ListItemComp = function($,Mustache,TXMBase,GrandChildComp) {
 		,"delayInit":false
 	};
 
-	class componentClass extends TXMBase {
+	class componentClass extends Nimbly {
 
 		constructor(data, options) {
 			super("ListItemComp", defaults, data || {}, options || {});
@@ -53,9 +53,9 @@ var ListItemComp = function($,Mustache,TXMBase,GrandChildComp) {
 };
 
 if (typeof module === "undefined") {
-	window["ListItemComp"] = ListItemComp($,Mustache,TXMBase,GrandChildComp);
+	window["ListItemComp"] = ListItemComp($,Mustache,Nimbly,GrandChildComp);
 } else {
-	module.exports = function($,Mustache,TXMBase,GrandChildComp) {
-		return ListItemComp($,Mustache,TXMBase,GrandChildComp);
+	module.exports = function($,Mustache,Nimbly,GrandChildComp) {
+		return ListItemComp($,Mustache,Nimbly,GrandChildComp);
 	};
 }

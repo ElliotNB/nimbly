@@ -1,12 +1,12 @@
 /*
- * 	TXMBase
+ * 	Nimbly
  *	Version 0.0.3
- * 	https://github.com/transformativemed/txmbase
+ * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
  * 	http://www.opensource.org/licenses/MIT
  *
- *	TXMBase is the proposed base class for TransformativeMed web components. The objectives of TXMBase are as follows:
+ *	Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
  *
  *	1. Provide a common structure and organization for child components to follow.
  *	2. Reduce repetitive 'boiler plate' code contained in the child components.
@@ -18,14 +18,14 @@
  *		- Dependency injection.
  *		- Automated unit testing.
  *	4. Reduce effort level for non-author devs to understand and maintain components.
- *	5. Allow for easy re-factors of the jQuery-driven TransformativeMed legacy code base.
+ *	5. Allow for easy re-factors of jQuery-driven legacy code.
  *	6. Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
  */
-var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
+var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 
-	if (typeof $ === "undefined") throw new Error("TXMBase requires jQuery 1.9+.");
-	if (typeof Mustache === "undefined") throw new Error("TXMBase requires Mustache.");
-	if (typeof ObservableSlim === "undefined") throw new Error("TXMBase requires ObservableSlim 0.1.0+.");
+	if (typeof $ === "undefined") throw new Error("Nimbly requires jQuery 1.9+.");
+	if (typeof Mustache === "undefined") throw new Error("Nimbly requires Mustache.");
+	if (typeof ObservableSlim === "undefined") throw new Error("Nimbly requires ObservableSlim 0.1.0+.");
 
 	var baseClassInstance = 0;
 
@@ -65,7 +65,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		if (templateElmt) {
 			var template = templateElmt.innerHTML.trim();
 		} else {
-			throw new Error("TXMBase::_getTemplate() could not find the template with element ID: '"+templateElmtId+"'.");
+			throw new Error("Nimbly::_getTemplate() could not find the template with element ID: '"+templateElmtId+"'.");
 		}
 		return template;
 	};
@@ -188,7 +188,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		if (this.options.templates instanceof Array) {
 			// if no templates were provided, throw an error because we can't continue without something to render.
 			if (this.options.templates.length == 0) {
-				throw new Error("TXMBase::constructor cannot continue -- no templates provided.");
+				throw new Error("Nimbly::constructor cannot continue -- no templates provided.");
 			// else loop over each Mustache template element identifier and add the content of the template to this.templates
 			} else {
 				for (var i = 0; i < this.options.templates.length; i++) {
@@ -214,7 +214,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 				this.loadingTemplate = this.options.loadingTemplate;
 			}
 		} else {
-			this.loadingTemplate = "<div class=\"default_txmbase_loading_template\"></div>";
+			this.loadingTemplate = "<div class=\"default_nimbly_loading_template\"></div>";
 		}
 
 		/*	Property: this.uiBindings
@@ -250,7 +250,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		if (typeof(data) === "object") {
 			this._data = data;
 		} else {
-			throw new Error("TXMBase::constructor cannot continue. Missing argument 'data'. The 'data' argument is required and must contain a full definition of the component model data.");
+			throw new Error("Nimbly::constructor cannot continue. Missing argument 'data'. The 'data' argument is required and must contain a full definition of the component model data.");
 		}
 
 		/*	Property: this.data
@@ -393,7 +393,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 		for (var dataBinding in this.dataBindings) {
 			for (var b = 0; b < this.dataBindings[dataBinding].methods.length; b++) {
 				if (typeof this[this.dataBindings[dataBinding].methods[b]] !== "function") {
-					throw new Error("TXMBase::init cannot continue. Please review the dataBindings on class "+self.className+". The method "+this.dataBindings[dataBinding].methods[b]+" does not exist or is not a function.");
+					throw new Error("Nimbly::init cannot continue. Please review the dataBindings on class "+self.className+". The method "+this.dataBindings[dataBinding].methods[b]+" does not exist or is not a function.");
 				}
 			}
 		}
@@ -421,7 +421,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			})(i)).catch((function(i) {
 				return function(error) {
 					console.error(error);
-					throw new Error("TXMBase::init cannot continue, "+self.className+"."+self.initList[i].method+"() failed to resolve. Error: " + error);
+					throw new Error("Nimbly::init cannot continue, "+self.className+"."+self.initList[i].method+"() failed to resolve. Error: " + error);
 				}
 			})(i));
 
@@ -532,7 +532,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 						if (typeof(self[fetchList[i]]) == "function") {
 							self[fetchList[i]](resolve,reject);
 						} else {
-							throw new Error("TXMBase::_fetch cannot continue, the method "+self.className+"."+fetchList[i]+"() does not exist or is not a function.");
+							throw new Error("Nimbly::_fetch cannot continue, the method "+self.className+"."+fetchList[i]+"() does not exist or is not a function.");
 						}
 					}
 				})(i)).catch((function(i) {
@@ -815,7 +815,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 						// if there are duplicate tags in the repeatable section that match this child component, then it's impossible to know which one is the right one
 						// to insert the child component
 						} else if (childTarget.length > 1) {
-							throw new Error("TXMBase::_insertChildren() cannot continue. Found multiple <"+childComponent.options.tagName+"> tags. A repeatable section must not contain duplicate child tags.");
+							throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+childComponent.options.tagName+"> tags. A repeatable section must not contain duplicate child tags.");
 						}
 
 					}
@@ -838,7 +838,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			// else if we found more than one tag that matches the repeatable section, that's a problem. you should never have a template
 			// that has two repeatable sections with the same tag name because we wouldn't know which one is the right place to populate the repeatable section
 			} else if (repeatSection.length > 1) {
-				throw new Error("TXMBase::_insertChildren() cannot continue. Found multiple <"+sectionName+"> tags. A repeatable section must have one insertion target (i.e., one matching custom tag).");
+				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+sectionName+"> tags. A repeatable section must have one insertion target (i.e., one matching custom tag).");
 			}
 
 		}
@@ -859,7 +859,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 
 				insertTarget.replaceWith(renderResult.elmt);
 			} else if (insertTarget.length > 1) {
-				throw new Error("TXMBase::_insertChildren() cannot continue. Found multiple <"+this.childComponents["default"][i].options.tagName+"> tags. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
+				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+this.childComponents["default"][i].options.tagName+"> tags. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
 			}
 		};
 
@@ -950,7 +950,7 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 						// selectors should uniquely identify the element to be replaced,
 						// if there are multiple targets, the .replaceWith won't work properly so we need to throw an error
 						if (jqOld.length > 1 || jqNew.length > 1) {
-							throw new Error("TXMBase::refresh() cannot continue. Refresh selector has multiple targets.");
+							throw new Error("Nimbly::refresh() cannot continue. Refresh selector has multiple targets.");
 						} else {
 							jqOld.replaceWith(jqNew);
 						}
@@ -1055,12 +1055,12 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 			var i = childComponent.length;
 			while (i--) {
 				if (isValidComponent(childComponent[i]) === false) {
-					throw new Error("TXMBase cannot register this component. It is not a valid TXMBase component.");
+					throw new Error("Nimbly cannot register this component. It is not a valid Nimbly component.");
 				}
 			};
 		} else {
 			if (isValidComponent(childComponent) === false) {
-				throw new Error("TXMBase cannot register this component. It is not a valid TXMBase component.");
+				throw new Error("Nimbly cannot register this component. It is not a valid Nimbly component.");
 			}
 		}
 
@@ -1163,9 +1163,9 @@ var TXMBase = function($,Mustache,ObservableSlim,HTMLElement) {
 };
 
 if (typeof module === "undefined") {
-	window["TXMBase"] = TXMBase($,Mustache,ObservableSlim,HTMLElement);
+	window["Nimbly"] = Nimbly($,Mustache,ObservableSlim,HTMLElement);
 } else {
 	module.exports = function($,Mustache,ObservableSlim,HTMLElement) {
-		return TXMBase($,Mustache,ObservableSlim,HTMLElement);
+		return Nimbly($,Mustache,ObservableSlim,HTMLElement);
 	};
 }

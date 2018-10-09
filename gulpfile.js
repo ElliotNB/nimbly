@@ -7,7 +7,7 @@ var babel = require('gulp-babel');
 var istanbul = require('gulp-istanbul');
 
 gulp.task('default', function(){
-  return gulp.src(['txmbase.js'])
+  return gulp.src(['nimbly.js'])
 	.pipe(useref())
 	// Minifies only if it's a JavaScript file
 	.pipe(uglify())
@@ -18,7 +18,7 @@ gulp.task('default', function(){
 });
 
 gulp.task('pre-test', function () {
-	return gulp.src(['txmbase.js'])
+	return gulp.src(['nimbly.js'])
 	// Covering files
 	.pipe(istanbul())
 	// Force `require` to return covered files

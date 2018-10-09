@@ -1,4 +1,4 @@
-var BadComponent = function($,Mustache,TXMBase) {
+var BadComponent = function($,Mustache,Nimbly) {
 	
 	const defaults = {
 		"tagName":"person-data"
@@ -31,7 +31,7 @@ var BadComponent = function($,Mustache,TXMBase) {
 		,"delayInit":false
 	};
 	
-	class componentClass extends TXMBase {
+	class componentClass extends Nimbly {
 
 		constructor(data, options) {
 			super("BadComponent", defaults, data || {}, options || {});
@@ -51,9 +51,9 @@ var BadComponent = function($,Mustache,TXMBase) {
 };
 
 if (typeof module === "undefined") {
-	window["BadComponent"] = BadComponent($,Mustache,TXMBase);
+	window["BadComponent"] = BadComponent($,Mustache,Nimbly);
 } else {
-	module.exports = function($,Mustache,TXMBase) {
-		return BadComponent($,Mustache,TXMBase);
+	module.exports = function($,Mustache,Nimbly) {
+		return BadComponent($,Mustache,Nimbly);
 	};
 }

@@ -1,4 +1,4 @@
-var HelloWorld = function($,Mustache,TXMBase,PersonData) {
+var HelloWorld = function($,Mustache,Nimbly,PersonData) {
 	var defaults = {
 		"tagName":"hello-world"
 		,"templates":["t4m_template_1"]
@@ -23,10 +23,10 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 	};
 
 	var constructor = function(data, options) {
-		TXMBase.call(this,"HelloWorld", defaults, data || {}, options || {});
+		Nimbly.call(this,"HelloWorld", defaults, data || {}, options || {});
 	};
 
-	constructor.prototype = Object.create(TXMBase.prototype);
+	constructor.prototype = Object.create(Nimbly.prototype);
 	constructor.prototype.constructor = constructor;
 	
 	constructor.prototype._render = function() {
@@ -100,9 +100,9 @@ var HelloWorld = function($,Mustache,TXMBase,PersonData) {
 };
 
 if (typeof module === "undefined") {
-	window["HelloWorld"] = HelloWorld($,Mustache,TXMBase,PersonData);
+	window["HelloWorld"] = HelloWorld($,Mustache,Nimbly,PersonData);
 } else {
-	module.exports = function($,Mustache,TXMBase,PersonData) {
-		return HelloWorld($,Mustache,TXMBase,PersonData);
+	module.exports = function($,Mustache,Nimbly,PersonData) {
+		return HelloWorld($,Mustache,Nimbly,PersonData);
 	};
 }

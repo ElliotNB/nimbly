@@ -1,4 +1,4 @@
-var GrandChildComp = function($,Mustache,TXMBase) {
+var GrandChildComp = function($,Mustache,Nimbly) {
 
 	const defaults = {
 		"tagName":"grand-child"
@@ -15,7 +15,7 @@ var GrandChildComp = function($,Mustache,TXMBase) {
 		,"delayInit":false
 	};
 
-	class componentClass extends TXMBase {
+	class componentClass extends Nimbly {
 
 		constructor(data, options) {
 			super("GrandChildComp", defaults, data || {}, options || {});
@@ -32,9 +32,9 @@ var GrandChildComp = function($,Mustache,TXMBase) {
 };
 
 if (typeof module === "undefined") {
-	window["GrandChildComp"] = GrandChildComp($,Mustache,TXMBase);
+	window["GrandChildComp"] = GrandChildComp($,Mustache,Nimbly);
 } else {
-	module.exports = function($,Mustache,TXMBase) {
-		return GrandChildComp($,Mustache,TXMBase);
+	module.exports = function($,Mustache,Nimbly) {
+		return GrandChildComp($,Mustache,Nimbly);
 	};
 }

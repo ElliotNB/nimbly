@@ -1,4 +1,4 @@
-var BadComponent = function($,Mustache,TXMBase) {
+var BadComponent = function($,Mustache,Nimbly) {
 	var defaults = {
 		"tagName":"person-data"
 		,"templates":["t4m_template_2"]
@@ -23,9 +23,9 @@ var BadComponent = function($,Mustache,TXMBase) {
 	};
 
 	var constructor = function(data, options) {
-		TXMBase.call(this,"BadComponent", defaults, data || {}, options || {});
+		Nimbly.call(this,"BadComponent", defaults, data || {}, options || {});
 	};
-	constructor.prototype = Object.create(TXMBase.prototype);
+	constructor.prototype = Object.create(Nimbly.prototype);
 	constructor.prototype.constructor = constructor;
 	
 	constructor.prototype._render = function() {
@@ -40,9 +40,9 @@ var BadComponent = function($,Mustache,TXMBase) {
 };
 
 if (typeof module === "undefined") {
-	window["BadComponent"] = BadComponent($,Mustache,TXMBase);
+	window["BadComponent"] = BadComponent($,Mustache,Nimbly);
 } else {
-	module.exports = function($,Mustache,TXMBase) {
-		return BadComponent($,Mustache,TXMBase);
+	module.exports = function($,Mustache,Nimbly) {
+		return BadComponent($,Mustache,Nimbly);
 	};
 }

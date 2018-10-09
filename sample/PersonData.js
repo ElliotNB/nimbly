@@ -1,4 +1,4 @@
-var PersonData = function($,Mustache,TXMBase) {
+var PersonData = function($,Mustache,Nimbly) {
 
 	const defaults = {
 		"tagName":"person-data"
@@ -32,7 +32,7 @@ var PersonData = function($,Mustache,TXMBase) {
 		,"delayInit":false
 	};
 
-	class componentClass extends TXMBase {
+	class componentClass extends Nimbly {
 	
 		constructor(data, options) {
 			super("PersonData", defaults, data || {}, options || {});
@@ -51,9 +51,9 @@ var PersonData = function($,Mustache,TXMBase) {
 };
 
 if (typeof module === "undefined") {
-	window["PersonData"] = PersonData($,Mustache,TXMBase);
+	window["PersonData"] = PersonData($,Mustache,Nimbly);
 } else {
-	module.exports = function($,Mustache,TXMBase) {
-		return PersonData($,Mustache,TXMBase);
+	module.exports = function($,Mustache,Nimbly) {
+		return PersonData($,Mustache,Nimbly);
 	};
 }

@@ -35,12 +35,12 @@ describe('HelloWorld component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var TXMBase = require("../../txmbase.js")($,Mustache,ObservableSlim,Object);
-	var GrandChildComp = require("../GrandChildComp.js")($,Mustache,TXMBase);
-	var PersonData = require("../PersonData.js")($,Mustache,TXMBase);
-	var ListItemComp = require("../ListItemComp.js")($,Mustache,TXMBase,GrandChildComp);
-	var BadComponent = require("../BadComponent.js")($,Mustache,TXMBase);
-	var HelloWorld = require("../HelloWorld.js")($,Mustache,TXMBase,PersonData,ListItemComp);
+	var Nimbly = require("../../nimbly.js")($,Mustache,ObservableSlim,Object);
+	var GrandChildComp = require("../GrandChildComp.js")($,Mustache,Nimbly);
+	var PersonData = require("../PersonData.js")($,Mustache,Nimbly);
+	var ListItemComp = require("../ListItemComp.js")($,Mustache,Nimbly,GrandChildComp);
+	var BadComponent = require("../BadComponent.js")($,Mustache,Nimbly);
+	var HelloWorld = require("../HelloWorld.js")($,Mustache,Nimbly,PersonData,ListItemComp);
 	var helloWorld = new HelloWorld();
 	helloWorld.render();
 
