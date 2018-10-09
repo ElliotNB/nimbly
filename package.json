@@ -22,6 +22,7 @@
     "jsdom": "11.7.0",
     "mustache": "2.3.0",
     "observable-slim": "0.1.0",
+    "nyc": "11.8.0",
     "util": "0.10.3",
     "xmlhttprequest": "1.8.0"
   },
@@ -29,6 +30,10 @@
     "presets": [
       "es2015"
     ]
+  },
+  "scripts": {
+    "test": "nyc mocha sample/test/*.js",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "repository": {
     "type": "git",
