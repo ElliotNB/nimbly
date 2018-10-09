@@ -3,6 +3,8 @@ node_js:
   - "8"
 before_script:
   - npm install
-script: gulp test
+script: 
+  - gulp test
+  - npm run coveralls
 notifications:
   slack: transformativemed:0JUkhBnKaiZ1vARU9rDe9S4o

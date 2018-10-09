@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/TransformativeMed/txmbase.svg?token=YHpZnkxTeYHnDBM645Y8&branch=master)](https://travis-ci.com/TransformativeMed/txmbase)
+[![Build Status](https://travis-ci.org/ElliotNB/nimbly.svg?branch=master)](https://travis-ci.org/ElliotNB/nimbly)
 
 # Overview
 
