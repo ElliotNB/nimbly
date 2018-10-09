@@ -26,7 +26,7 @@ gulp.task('pre-test', function () {
 });
 
 gulp.task('test', ['pre-test'], function() {
-	return gulp.src(['test/test/test.js'])
+	return gulp.src(['sample/test/test.js'])
 	.pipe(mocha({compilers:babel}))
 	.pipe(istanbul.writeReports());
 });
