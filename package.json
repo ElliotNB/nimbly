@@ -46,6 +46,8 @@
     "url": "https://github.com/ElliotNB/nimbly/issues"
   },
   "dependencies": {
-    "npm": "5.8.0"
+    "observable-slim": "0.1.0",
+	"jquery": "3.3.1"
+	
   }
 }
