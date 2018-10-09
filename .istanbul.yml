@@ -3,5 +3,5 @@ instrumentation:
     extensions:
         - .js
     default-excludes: true
-    excludes: ['sample','**min.js','gulpfile.js']
+    excludes: ['sample/*','sample/*.js','sample/test/*.js','sample/lib/*.js','**min.js','gulpfile.js']
     include-all-sources: true

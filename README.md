@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ElliotNB/nimbly.svg?branch=master)](https://travis-ci.org/ElliotNB/nimbly)
+[![Build Status](https://travis-ci.org/ElliotNB/nimbly.svg?branch=master)](https://travis-ci.org/ElliotNB/nimbly) [![Coverage Status](https://coveralls.io/repos/github/ElliotNB/nimbly/badge.svg?branch=master)](https://coveralls.io/github/ElliotNB/nimbly?branch=master)
 
 # Overview
 
