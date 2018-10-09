@@ -1,7 +1,7 @@
 {
   "name": "nimbly",
   "description": "Nimbly is a JavaScript component framework for single page applications.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "nimbly.js",
   "devDependencies": {
     "babel-core": "6.26.0",
