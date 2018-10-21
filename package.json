@@ -18,10 +18,7 @@
     "gulp-rename": "1.2.2",
     "gulp-uglify": "3.0.0",
     "gulp-useref": "3.1.5",
-    "jquery": "3.3.1",
     "jsdom": "11.7.0",
-    "mustache": "2.3.0",
-    "observable-slim": "0.1.0",
     "nyc": "11.8.0",
     "util": "0.10.3",
     "xmlhttprequest": "1.8.0"
@@ -47,7 +44,7 @@
   },
   "dependencies": {
     "observable-slim": "0.1.0",
-	"jquery": "3.3.1"
-	
+    "jquery": "3.3.1",
+    "mustache": "3.0.0"
   }
 }
