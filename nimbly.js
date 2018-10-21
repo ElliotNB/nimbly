@@ -206,7 +206,13 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				is utilized only if the .render() method is invoked before the component has been initialized. It allows the component to return
 				a rendered DomNode that will be subsequently updated as soon as initialization completes.
 		*/
-		if (typeof(this.options.loadingTemplate) == "string") {
+		if (typeof(this.options.loadingTemplate) === "string") {
+			
+			// throw an error if the loading template is an empty string
+			if (this.options.loadingTemplate.length === 0) {
+				throw new Error("Nimbly::constructor cannot continue -- the loadingTemplate cannot be an empty string.");
+			}
+			
 			// if the user supplied an element identifier, then go fetch the content of the
 			if (document.getElementById(this.options.loadingTemplate)) {
 				this.loadingTemplate = _getTemplate(this.options.loadingTemplate);
@@ -599,6 +605,11 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 			} else {
 				var jqDom = $(Mustache.render(this.loadingTemplate, null));
 			}
+			
+			// throw an error if the rendered loading display does not contain 1 top-level element.
+			if (jqDom.length !== 1) {
+				throw new Error(this.className +".render() cannot continue. The loadingTemplate or _renderLoading method has returned an object with "+jqDom.length+" top-level elements. There must be one top-level element that encapsulates the loading display.");
+			}
 
 		// else the component is initialized and ready for the standard render
 		} else {
@@ -665,6 +676,11 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				var jqDom = this._renderLoading();
 			} else {
 				var jqDom = $(Mustache.render(this.loadingTemplate, null));
+			}
+			
+			// throw an error if the rendered loading display does not contain 1 top-level element.
+			if (jqDom.length !== 1) {
+				throw new Error(this.className +".render() cannot continue. The loadingTemplate or _renderLoading method has returned an object with "+jqDom.length+" top-level elements. There must be one top-level element that encapsulates the loading display.");
 			}
 
 		// else the component is initialized and ready for the standard render
