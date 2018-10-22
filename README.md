@@ -46,25 +46,25 @@ The Nimbly constructor accepts four parameters:
 
 All Nimbly components have the following public properties:
 
-1. **`options`** - Object, the component default settings with any used-defined options merged over the top.
+1. **`options`** - Object, the component default settings with any user-defined options merged over the top.
 
 2. **`className`** - String, the name of the class that initialized the base class. We store this value for debugging and logging purposes.
 
-3. **`baseClassInstance`** - Integer, counts the number of times the base class has been initialized. Useful for debugging, identifying unique instances.
+3. **`jqDom`** - jQuery-referenced DOM Node rendered by this component.
 
-4. **`jqDom`** - jQuery-referenced DOM Node rendered by this component.
+4. **`initialized`** - Boolean, set to true when the this.init() method has completed and the component is ready to render.
 
-5. **`initialized`** - Boolean, set to true when the this.init() method has completed and the component is ready to render.
+5. **`childComponents`** - Hash, if a component registers (via `.registerChild`) other components, then those child components will be added to the hash. Child components are indexed on the hash according to what list or repeatable section they belong to. If a component is not part of a list, then that component is added to `this.childComponents.default`.
 
-6. **`childComponents`** - Hash, if a component registers (via `.registerChild`) other components, then those child components will be added to the hash. Child components are indexed on the hash according to what list or repeatable section they belong to. If a component is not part of a list, then that component is added to `this.childComponents.default`.
+6. **`templates`** - Hash, where the key is the name of the template and the value is a string containing the template. The hash contains each template used by the component. The template element identifiers are passed in via options.templates and below we will populate this.templates with the content of the template.
 
-7. **`templates`** - Hash, where the key is the name of the template and the value is a string containing the template. The hash contains each template used by the component. The template element identifiers are passed in via options.templates and below we will populate this.templates with the content of the template.
+7. **`loadingTemplate`** - String, template content OR an element identifier of the template used to display a loading spinner or loading message. The loadingTemplate is utilized only if the .render() method is invoked before the component has been initialized. It allows the component to return a rendered DomNode that will be subsequently updated as soon as initialization completes.
 
-8. **`loadingTemplate`** - String, template content OR an element identifier of the template used to display a loading spinner or loading message. The loadingTemplate is utilized only if the .render() method is invoked before the component has been initialized. It allows the component to return a rendered DomNode that will be subsequently updated as soon as initialization completes.
+8. **`data`** - ES6 Proxy, serves as a proxy to the component state data (this._data) and enables the component to observe any changes that occur to the data. All modifications to component data should be made through this property.
 
-9. **`data`** - ES6 Proxy, serves as a proxy to the component model data (this._data) and enables the component to observe any changes that occur to the data. All modifications to component data should be made through this property.
+# Base Class Methods
 
-# Methods
+These methods are implemented by the Nimbly base class and are available on all components that extend Nimbly:
 
 ## Public
 
@@ -90,6 +90,10 @@ All Nimbly components have the following public methods:
 5. **`destroy()`** - This method will remove this.jqDom from the DOM and delete the observable that was created during initialization. If the component initialized any child components, then those will be destroyed as well. This helps ensure that memory usage does not balloon after repeated refreshes and UI updates.
 	* *Parameters:* None.
 	* *Returns:* Nothing.
+	
+6. **`eachChildComponent`** - This method will iterate over each component that has been registered as a child of the current component. This method accepts one parameter, a callback function. That callback function invoked upon each interation of `eachChildComponent`. The callback function is passed three parameters: 1. a reference to the child component instance, 2. the template section the component belongs to, and 3. a method that when invoked will unregister and destroy the child component.
+	* *Parameters:* 
+		* `handler` - function, required, accepts three parameters: 1. the current section name (string), 2. the child component (object) and 3. a callback method to remove the child component (function)
 
 ## Protected
 
@@ -110,6 +114,43 @@ JavaScript does not support protected methods, but the following methods are **i
 	* *Parameters:* None.
 	* *Returns:* Nothing.
 
+# Component Methods
+
+The following methods are implemented by Nimbly components.
+
+1. **`_render`** - Required, every component must have a `_render` method. The `_render` method is prefixed with an underscore denoting that it is private and should not be invoked externally. The `_render` method is the only place where the UI for the component is generated. No other portion of the component is allowed to modify the UI or make any manual DOM manipulations. The single `_render` method provides non-author devs a single place to inspect when they want to understand the display logic of a component or figure out why a component looks the way it does
+	* *Parameters:* None.
+	* *Returns:* jQuery-referenced DocumentFragment with bound event handlers ready for insertion into the main DOM.
+
+2. **`_renderLoading()`** Sometimes loading displays require more logic than a simple HTML blurb can provide. In cases where the `loadingTemplate` alone is insufficient, you may define `_renderLoading` on your component that will be invoked when it comes time to render and display the loading screen.
+	* *Returns:* jQuery-referenced DocumentFragment, the component ready to be inserted into the main DOM.
+	
+3. **`_fetch*(resolve, reject)`** Optional, the `dataBindings` and `initList` in the settings both contain references to `_fetch*` methods. Fetch methods retrieve data from external sources via ajax and update values stored on `this.data`. They are treated as `Promise`s in that they accept `resolve` and `reject` functions as parameters.
+	* *Parameters:*
+		* `resolve` - Function, required, invoked if the `_fetch*` method is successful in retrieving data and updating `this.data`.
+		* `reject` - Function, required, invoked if the `_fetch*` method is unsuccessful in retrieving data and updating `this.data`.
+	* *Returns:* Nothing.
+
+## Lifecycle Hooks
+
+Components have a lifecycle that is managed by Nimbly. Nimbly offers lifecycle hooks that provide visibility into key life moments and the ability to act when they occur.
+
+The implementation of lifecycle hooks is optional.
+
+1. **`_init()`** - this method is invoked immediately after the component has initialized (i.e., after the methods defined in `this.initList` have completed).
+
+2. **`_afterRender()`** - invoked immediately after the child components are inserted into this component. Passes in a reference to the just rendered component.
+	* *Parameters:*
+		* `jqDom` - a jQuery-referenced DocumentFragment of the just rendered component.
+
+3. **`_afterRefresh()`** - invoked immediately after the display of a component is refreshed.
+	* *Parameters:*
+		* `fullRefresh` - boolean, set to true if the entire component was refreshed, set to false is the refresh only affected part of the component.
+		* `jqOldDom` - jQuery-referenced DocumentFragment of the component's previous display state.
+
+4. **`_destroy()`** - invoked immediately before a component is destroyed. A place to perform any component-specific clean-up procedures and avoid memory leaks.
+
+ 	
 # Settings
 
 The `defaults` and `options` parameters are the two most significant parameters passed into the Nimbly constructor. Together they dictate how the component initializes itself, how the UI should update in response to data changes, what actions to take after data changes occur, what templates the component should use, etc.
@@ -120,7 +161,33 @@ The full list of component settings is as follows:
 
 1. **`tagName`** - String, required, if this component is registered as a child of another component, then the `tagName` defines what custom tag in the template will include this component (e.g., `tagName:"hello-world" == <hello-world></hello-world>`).
 
-2. **`templates`** - Array, required, what templates the component will use identified by their `<script>` tag element ID.
+2. **`templates`** - Object, required, a set of name value pairs -- the name being the template name and the value being a string (or template litereal) containing the Mustache template. 
+
+	For ES5 support (e.g., IE11, no support for template literals) , `templates` may also be an Array of element IDs pointing to `<script>` tags on the document whose innerHTML contains the Mustache template.
+
+	Example:
+	
+	```javascript
+	templates:{
+			t4m_tpl_cm_temp_page:`
+				<div data-role="page" data-theme="b" class="t4m-cm-generic-loading-page" location_hash="{{location_hash}}">
+					<div class="t4m-cm-spinner-container">
+							<i class="fa fa-asterisk fa-spin fa-5x fa-fw"></i>
+					</div>
+				</div>
+			`
+			,t4m_tpl_cm_handoff_page_new:`
+				<div>
+					Hello {{first_name}}, this is the home page.
+				</div>
+			`
+	}
+	```
+	
+	ES5 example:
+	```javascript
+	templates:["t4m_tpl_cm_temp_page","t4m_tpl_cm_handoff_page_new"]
+	```
 
 3. **`loadingTemplate`** - String, optional, if this component needs to display a loading message or a loading spinner, specify that template here.
 
@@ -128,74 +195,64 @@ The full list of component settings is as follows:
 
 5. **`hideLoadMask`** - Function, optional, executed when we need to hide the loading mask over the component.
 
-6. **`initList`** - Array, optional, list of "fetch" methods (defined on the component, see below for details) that should be invoked in order to initialize the components. Example:
+6. **`initList`** - Array, optional, list of "fetch" methods (defined on the component, see below for details) that should be invoked in order to initialize the components. 
 
-```javascript
-[
-	{"method":"_fetchUserOrgDetails","preventRender":true},
-	{"method":"_fetchProviderInfo","preventRender":true}
-]
-```
+	Each item of `initList` is an object containing two properties: `method` and `preventRender`. `method` is a string that refers to which method on the component should be invoked and `preventRender` is a boolean which when set to true will prevent the component from rendering until the initialization method has resolved (the loading template will be displayed until then).
+
+	Example:
+
+	```javascript
+	initList:[
+		{"method":"_fetchUserOrgDetails","preventRender":true},
+		{"method":"_fetchProviderInfo","preventRender":true}
+	]
+	```
+	
+	The methods defined in the `initList` (as well as for the `dataBindings` below) should accept two parameters `resolve` and `reject` which should be invoked as appropriate when the method is complete.
 
 6. **`uiBindings`** - Object, optional, key value pairs that define what changes to `this.data` should trigger what portions of the component to update. The key is a string or regular expression that defines which part of `this.data` should be observed for changes. The value is either an array or boolean. If set to true, then the whole component will refresh. If set to an array, then the portions of the component that match the CSS selectors in the array will be refreshed. In the example below, a change to `this.data.new_issue.show` would trigger refresh of `<div class="t4m_issuetracker_issue_list_header"></div>` and `<div class="t4m_issuetracker_issue_list_footer"></div>`, but the rest of the component would remain unchanged. Example:
 
-```javascript
-{
-	"/issuelist.*selected/": [".t4m_issuetracker_issue_list_expanded_row"]
-	,"issuelist":true
-	,"new_issue.show": [".t4m_issuetracker_issue_list_header",".t4m_issuetracker_issue_list_footer"]
-}
-```
+	```javascript
+	uiBindings:{
+		"/issuelist.*selected/": [".t4m_issuetracker_issue_list_expanded_row"]
+		,"issuelist":true
+		,"new_issue.show": [".t4m_issuetracker_issue_list_header",".t4m_issuetracker_issue_list_footer"]
+	}
+	```
 
 **Note:** `uiBindings` do not take effect until the component has initialized (i.e., when `this.initialized === true`). This prevents `this.data` modifications in the constructor from triggering UI refreshes.
 
-7. **`dataBindings`** - Object, optional, key value pairs that define what data `fetch` methods should be invoked when specified data changes occur. Follows the same logic as `uiBindings` above, except that instead of specifying portions of the component to refresh, the value specifies which `fetch` methods should be invoked and whether or not we should delay refreshing the component until the fetch method returns. Example:
+7. **`dataBindings`** - Object, optional, key value pairs that define what data `fetch` methods should be invoked when specified data changes occur. Follows the same logic as `uiBindings` above, except that instead of specifying portions of the component to refresh, the value specifies which methods should be invoked and whether or not we should delay refreshing the component until the fetch method returns. 
 
-```javascript
-{
-	"categoryId":{"delayRefresh": true,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
-	,"/^filters/":{"delayRefresh": false,"methods": ["_applyFilters"]}
-	,"filters.issue_open_closed":{"delayRefresh": false,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
-	,"/quick_filters/":{"delayRefresh": true,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
-	,"new_issue.save_issue":{"delayRefresh": false,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
-}
-```
+	Example:
 
-**Note:** `dataBindings` do not take effect until the component has initialized (i.e., when `this.initialized === true`). This prevents `this.data` modifications in the constructor from triggering data retrievals.
+	```javascript
+	dataBindings:{
+		"categoryId":{"delayRefresh": true,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
+		,"/^filters/":{"delayRefresh": false,"methods": ["_applyFilters"]}
+		,"filters.issue_open_closed":{"delayRefresh": false,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
+		,"/quick_filters/":{"delayRefresh": true,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
+		,"new_issue.save_issue":{"delayRefresh": false,"methods": ["_fetchIssueList", "_fetchStatSummary"]}
+	}
+	```
+	
+	As above with the methods used in the `initList`, each method that is paired with a dataBinding should accept two parameters `resolve` and `reject` which are callback methods that should be invoked as appropriate when the method completes.
+
+	**Note:** `dataBindings` do not take effect until the component has initialized (i.e., when `this.initialized === true`). This prevents `this.data` modifications in the constructor from triggering data retrievals.
 
 8. **`data`** - Object, required, this is the default data passed into the component. often times this data is just null because it must first be populated by the _fetch* methods defined in the `initList` above. Example:
 
-```javascript
-{
-	"user_name":""
-	,"person_id":3453456
-	,"patient_name":null
-	,"birth_date":null
-	,"admit_date":null
-}
-```
+	```javascript
+	data:{
+		"user_name":""
+		,"person_id":3453456
+		,"patient_name":null
+		,"birth_date":null
+		,"admit_date":null
+	}
+	```
 
 9. **`delayInit`** - Boolean, optional, defaults to true. If true, then we do not fire off the _fetch* methods defined in the initList automatically when the component is initialized -- we would have do it manually at a later time using the this.init() method.
-
-# Component classes
-
-`Nimbly` is a base class that cannot function by itself. It must be extended by component classes (child classes) in order to be useful.
-
-Component classes have their own set of methods that interact with the base class. Those methods are:
-
-1. **`_render`** - Required, every component must have a `_render` method. The `_render` method is prefixed with an underscore denoting that it is private and should not be invoked externally. The `_render` method is the only place where the UI for the component is generated. No other portion of the component is allowed to modify the UI or make any manual DOM manipulations. The single `_render` method provides non-author devs a single place to inspect when they want to understand the display logic of a component or figure out why a component looks the way it does
-	* *Parameters:* None.
-	* *Returns:* jQuery-referenced DocumentFragment with bound event handlers ready for insertion into the main DOM.
-	
-2. **`_init`** - Optional, this method is executed **after** the component initialization completes (i.e., when `this.initialized === true`). It may contain any manner of custom logic or data processing. Typically the `_init` method is used as a good place to initialize and register child components (see below for details).
-	* *Parameters:* None.
-	* *Returns:* Nothing.
-
-3. **`_fetch*(resolve, reject)`** Optional, the `dataBindings` and `initList` in the settings both contain references to `_fetch*` methods. Fetch methods retrieve data from external sources via ajax and update values stored on `this.data`. They are treated as `Promise`s in that they accept `resolve` and `reject` functions as parameters.
-	* *Parameters:*
-		* `resolve` - Function, required, invoked if the `_fetch*` method is successful in retrieving data and updating `this.data`.
-		* `reject` - Function, required, invoked if the `_fetch*` method is unsuccessful in retrieving data and updating `this.data`.
-	* *Returns:* Nothing.
 	
 # Usage
 
