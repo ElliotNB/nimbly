@@ -17,7 +17,7 @@ Nimbly is a JavaScript component framework for single page applications. The obj
 	* Components follow a common structure and organization.
 	* Easily identifiable state mutations.
 	* Clear linking of state to display.
-	* Common public methods and lifecycle hooks.	
+	* Common public methods and lifecycle hooks for all components.	
 * Facilitate easier re-factors of jQuery-heavy legacy code.
 * Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
 
