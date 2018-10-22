@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/ElliotNB/nimbly.svg?branch=master)](https://travis-ci.org/ElliotNB/nimbly) [![Coverage Status](https://coveralls.io/repos/github/ElliotNB/nimbly/badge.svg?branch=master)](https://coveralls.io/github/ElliotNB/nimbly?branch=master)
 
-# Overview
+# :surfer: Nimbly 
 
 Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
 
@@ -210,7 +210,9 @@ The full list of component settings is as follows:
 	
 	The methods defined in the `initList` (as well as for the `dataBindings` below) should accept two parameters `resolve` and `reject` which should be invoked as appropriate when the method is complete.
 
-6. **`uiBindings`** - Object, optional, key value pairs that define what changes to `this.data` should trigger what portions of the component to update. The key is a string or regular expression that defines which part of `this.data` should be observed for changes. The value is either an array or boolean. If set to true, then the whole component will refresh. If set to an array, then the portions of the component that match the CSS selectors in the array will be refreshed. In the example below, a change to `this.data.new_issue.show` would trigger refresh of `<div class="t4m_issuetracker_issue_list_header"></div>` and `<div class="t4m_issuetracker_issue_list_footer"></div>`, but the rest of the component would remain unchanged. Example:
+6. **`uiBindings`** - Object, optional, key value pairs that define what changes to `this.data` should trigger what portions of the component to update. The key is a string or regular expression that defines which part of `this.data` should be observed for changes. The value is either an array or boolean. If set to true, then the whole component will refresh. If set to an array, then the portions of the component that match the CSS selectors in the array will be refreshed. In the example below, a change to `this.data.new_issue.show` would trigger refresh of `<div class="t4m_issuetracker_issue_list_header"></div>` and `<div class="t4m_issuetracker_issue_list_footer"></div>`, but the rest of the component would remain unchanged. 
+
+	Example:
 
 	```javascript
 	uiBindings:{
@@ -220,7 +222,7 @@ The full list of component settings is as follows:
 	}
 	```
 
-**Note:** `uiBindings` do not take effect until the component has initialized (i.e., when `this.initialized === true`). This prevents `this.data` modifications in the constructor from triggering UI refreshes.
+	**Note:** `uiBindings` do not take effect until the component has initialized (i.e., when `this.initialized === true`). This prevents `this.data` modifications in the constructor from triggering UI refreshes.
 
 7. **`dataBindings`** - Object, optional, key value pairs that define what data `fetch` methods should be invoked when specified data changes occur. Follows the same logic as `uiBindings` above, except that instead of specifying portions of the component to refresh, the value specifies which methods should be invoked and whether or not we should delay refreshing the component until the fetch method returns. 
 
@@ -240,7 +242,9 @@ The full list of component settings is as follows:
 
 	**Note:** `dataBindings` do not take effect until the component has initialized (i.e., when `this.initialized === true`). This prevents `this.data` modifications in the constructor from triggering data retrievals.
 
-8. **`data`** - Object, required, this is the default data passed into the component. often times this data is just null because it must first be populated by the _fetch* methods defined in the `initList` above. Example:
+8. **`data`** - Object, required, this is the default data passed into the component. often times this data is just null because it must first be populated by the _fetch* methods defined in the `initList` above. 
+
+	Example:
 
 	```javascript
 	data:{
