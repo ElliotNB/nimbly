@@ -4,17 +4,21 @@
 
 Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
 
-* Provide a common structure and organization for child components to follow.
-* Reduce repetitive 'boiler plate' code contained in the child components.
-* Encourage adoption of best practices and functionality of modern JS development and frameworks:
-    * Templating.
+* Encourage adoption of SPA best practices:
+	* Templating.
     * One-way data binding.
-    * State management.
+    * Consistent state management.
     * Elimination of explicit DOM manipulations.
     * Dependency injection.
     * Automated unit testing.
-* Reduce effort level for non-author devs to understand and maintain components.
-* Allow for easy re-factors of jQuery-heavy legacy code.
+	* Loosely coupled modular design.
+* Encourage expressive and easy-to-follow code:
+	* Reduce boilerplate code.
+	* Components follow a common structure and organization.
+	* Easily identifiable state mutations.
+	* Clear linking of state to display.
+	* Common public methods and lifecycle hooks.	
+* Facilitate easier re-factors of jQuery-heavy legacy code.
 * Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
 
 # Requirements
@@ -27,15 +31,15 @@ Nimbly requires the following libraries:
 
 # Parameters
 
-The Nimbly constructor accepts four parameters, they are:
+The Nimbly constructor accepts four parameters:
 
-1. **`className`** - String, required, the name of the child component class (e.g., HelloWorld) that instantiated the base class. This is useful for debugging when the error occurs inside the base class. Logging the className will tell you which class instantiated the base class and generated the error.
+1. **`className`** - String, required, the name of the component class (e.g., HelloWorld) that extends Nimbly. The class name is used for producing helpful debug messages when errors occur within Nimbly.
 
 2. **`defaults`** - Object, required, a variety of default options and preferences. See below for a definition of each configurable setting.
 
-3. **`data`** - Object, required, this is a plain JavaScript object that contains all the data required by the component to render itself. For IE11 (ES5) compatibility, all properties must be defined at the time of initialization even if they are assigned null values (see IE11 notes below for details). Even when IE11 is not a requirement, defining all properties at the time of initialization is recommended -- it provides other developers a blueprint of what data your component will use and/or track.
+3. **`data`** - Object, optional, a plain object that sets the initial state values (overwrites the default state defined in `defaults`).
 
-4. **`options`** - Object, optional, overrides the defaults by merging on top of it.
+4. **`options`** - Object, optional, overrides the `defaults` by merging over the top of it.
 
 
 # Properties

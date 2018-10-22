@@ -84,6 +84,9 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 
 		var self = this;
 
+		// if the user didn't an object for state data, then instantiate an empty plain object
+		if (typeof(data) == "undefined") var data = {};
+		
 		// if the user didn't provide any options, then instantiate an empty options object so we don't error out below
 		if (typeof(options) == "undefined") var options = {};
 
@@ -98,6 +101,12 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 		// to anything on defaults or options, so we can perform a deep copy instead of a shallow merge
 		this.options = $.extend(true, {}, defaults, options, {"data":data});
 
+		/* Property: this._data
+			Object, holds all of the data required to render the component. However, it should *never* be modified directly. All changes to this._data
+			should be made through this.data below.
+		*/
+		this._data = data;
+		
 		/*	Property: this.className
 				String, the name of the class that initialized the base class. We store this value for debugging and logging purposes.
 		*/
@@ -134,27 +143,27 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 		*/
 		this.hideLoadMask = this.options.hideLoadMask || function() { return null; }
 
-		/*	Property: this.pendingInit
+		/*	Property: this._pendingInit
 				Boolean, set to true when this.init() is still actively processing.
 		*/
-		this.pendingInit = false;
+		this._pendingInit = false;
 
-		/*	Property: this.pendingFetchCount
+		/*	Property: this._pendingFetchCount
 				Integer, a count of the number of unresolved and still in-progress fetch promises.
 		*/
-		this.pendingFetchCount = 0;
+		this._pendingFetchCount = 0;
 
-		/*	Property: this.initRendered
+		/*	Property: this._initRendered
 			Boolean, set to true when the component has fully rendered. This property is important for determining whether
 			or not a child component needs to be re-rendered (refreshed) when a parent component is refreshed.
 		*/
-		this.initRendered = false;
+		this._initRendered = false;
 
-		/*	Property: this.delayRefresh
+		/*	Property: this._delayRefresh
 				Boolean, set to true when there are one or more data requests in progress and we should not refresh the UI until they are all complete.
 				Helps us avoid a situation where a UI refresh is processed immediately before a fetch method completes which would generate a UI refresh of its own.
 		*/
-		this.delayRefresh = false;
+		this._delayRefresh = false;
 		
 		/*	Property: this._renderRunning
 				Boolean, set to true when the component's _render() method is running. This boolean is used to catch this.data mutations while the component is rendering.
@@ -223,10 +232,10 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 			this.loadingTemplate = "<div class=\"default_nimbly_loading_template\"></div>";
 		}
 
-		/*	Property: this.uiBindings
+		/*	Property: this._uiBindings
 				Object, dictates what part of the rendered component should be updated when a given data change occurs. Each property on this object
 				corresponds to a property on this.data.
-				Example: this.uiBindings =
+				Example: this._uiBindings =
 					"participant_list":[".t4m-jq-cm-convo-participant-container",".t4m-jq-cm-create-convo-send-btn"]
 					,"person_id":true
 				};
@@ -234,9 +243,9 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				In the above example, a change to this.data.participant_list will trigger an update of elements with classes ".t4m-jq-cm-convo-participant-container"
 				and ".t4m-jq-cm-create-convo-send-btn" while an update to "person_id" will trigger a full refresh of the component.
 		*/
-		this.uiBindings = this.options.uiBindings || {};
+		this._uiBindings = this.options.uiBindings || {};
 
-		/*	Property: this.dataBindings
+		/*	Property: this._dataBindings
 				Object, dictates which 'fetch' methods should be executed when a change occurs to a given value on this.data.
 				In the example below, a change to this.data.person_id will trigger the method this._fetchPersonList. The fetch methods are defined by the
 				child component. The "delayRefresh":true tells the component that we should not refresh the component until the fetch method completes and
@@ -247,17 +256,7 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 					}
 				}
 		*/
-		this.dataBindings = this.options.dataBindings || {};
-
-		/* Property: this._data
-				Object, holds all of the data required to render the component. However, it should *never* be modified directly. All changes to this._data
-				should be made through this.data below.
-		*/
-		if (typeof(data) === "object") {
-			this._data = data;
-		} else {
-			throw new Error("Nimbly::constructor cannot continue. Missing argument 'data'. The 'data' argument is required and must contain a full definition of the component model data.");
-		}
+		this._dataBindings = this.options.dataBindings || {};
 
 		/*	Property: this.data
 				ES6 Proxy for this._data
@@ -302,7 +301,7 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				while (i--) {
 
 					// loop over each ui binding and see if any of the changes qualify to trigger a refresh
-					for (var uiBinding in self.uiBindings) {
+					for (var uiBinding in self._uiBindings) {
 
 						// check if the user passed in a regular expression
 						var regExpBinding = false;
@@ -316,17 +315,17 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 						if (self._refreshList !== true && (uiBinding == changes[i].currentPath || regExpBinding)) {
 
 							// if the data binding is simply set to 'true', then that means the entire component must be refreshed.
-							if (self.uiBindings[uiBinding] === true) {
+							if (self._uiBindings[uiBinding] === true) {
 								self._refreshList = true;
 							// else add the CSS selectors from the data binding to the full list of CSS selectors that we'll be refreshing
 							} else {
-								self._refreshList = self._refreshList.concat(self.uiBindings[uiBinding]);
+								self._refreshList = self._refreshList.concat(self._uiBindings[uiBinding]);
 							}
 						}
 					}
 
 					// loop over each data binding and see if any of the changes qualify to trigger a data request
-					for (var dataBinding in self.dataBindings) {
+					for (var dataBinding in self._dataBindings) {
 
 						// check if the user passed in a regular expression
 						var regExpBinding = false;
@@ -339,10 +338,10 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 						if (dataBinding == changes[i].currentPath || regExpBinding) {
 
 							// check if this data binding requires us to delay refreshing the page
-							if (self.dataBindings[dataBinding].delayRefresh == true) delayRefresh = true;
+							if (self._dataBindings[dataBinding].delayRefresh == true) delayRefresh = true;
 
 							// append to the fetchList array which fetch methods we will need to invoke
-							var fetchList = fetchList.concat(self.dataBindings[dataBinding].methods);
+							var fetchList = fetchList.concat(self._dataBindings[dataBinding].methods);
 						}
 					}
 
@@ -362,29 +361,29 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 			};
 		});
 
-		/*	Method: this.observe
-				Allows external entities to observe changes that occur on the this.data property. This method is defined
-				in the constructor rather than prototype because it must have access to "var data" which is only available in the constructor
-				and is unique to each instantiation of the base class.
-
-				This method is useful when one class has instantiated several others and it must monitor for any data changes that occur to those classes.
-
-			Parameters:
-				fnChanges - a function that is invoked with with a single argument whenever 'var data' is modified. The single argument will have
-							the following format:
-							[{"type":"add","target":{"blah":42},"property":"blah","newValue":42,"currentPath":"testing.blah"}]
-
-			Returns:
-				Nothing.
-		*/
-		constructor.prototype.observe = function(fnChanges) {
-			return ObservableSlim.create(this._data, true, fnChanges);
-		};
-
 		// Unless we've been told to delay the initialization of the component, fire off initialization immediately
 		var delayInit = this.options.delayInit || false;
 		if (delayInit == false) this.init();
 
+	};
+	
+	/*	Method: this.observe
+			Allows external entities to observe changes that occur on the this.data property. This method is defined
+			in the constructor rather than prototype because it must have access to "var data" which is only available in the constructor
+			and is unique to each instantiation of the base class.
+
+			This method is useful when one class has instantiated several others and it must monitor for any data changes that occur to those classes.
+
+		Parameters:
+			fnChanges - a function that is invoked with with a single argument whenever 'var data' is modified. The single argument will have
+						the following format:
+						[{"type":"add","target":{"blah":42},"property":"blah","newValue":42,"currentPath":"testing.blah"}]
+
+		Returns:
+			Nothing.
+	*/
+	constructor.prototype.observe = function(fnChanges) {
+		return ObservableSlim.create(this._data, true, fnChanges);
 	};
 
 	/*	Method: this.init
@@ -396,10 +395,10 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 		
 		// run a quick sanity check, verify that the dataBindings defined by the component refer to actual methods on the component
 		// if they don't exist, then we want to throw a warning notifying the developer of the potential misconfiguration
-		for (var dataBinding in this.dataBindings) {
-			for (var b = 0; b < this.dataBindings[dataBinding].methods.length; b++) {
-				if (typeof this[this.dataBindings[dataBinding].methods[b]] !== "function") {
-					throw new Error("Nimbly::init cannot continue. Please review the dataBindings on class "+self.className+". The method "+this.dataBindings[dataBinding].methods[b]+" does not exist or is not a function.");
+		for (var dataBinding in this._dataBindings) {
+			for (var b = 0; b < this._dataBindings[dataBinding].methods.length; b++) {
+				if (typeof this[this._dataBindings[dataBinding].methods[b]] !== "function") {
+					throw new Error("Nimbly::init cannot continue. Please review the dataBindings on class "+self.className+". The method "+this._dataBindings[dataBinding].methods[b]+" does not exist or is not a function.");
 				}
 			}
 		}
@@ -444,13 +443,13 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 		// if there are promises that must resolve before the component renders, then we need to start them and mark the initialization as pending
 		if (listActivePromises.length > 0) {
 			// we have one or more in-progress promises, so increment the count
-			this.pendingFetchCount++;
-			this.pendingInit = true;
+			this._pendingFetchCount++;
+			this._pendingInit = true;
 			// Create a Promise all that resolves when all of the promises resolve
 			var initListPromise = Promise.all(listActivePromises).then(function() {
 				initListPromise.done = true;
 				self.initialized = true;
-				self.pendingInit = false;
+				self._pendingInit = false;
 				self._refreshList = true;
 				self.pendingRefresh = true;
 				queueRefresh({
@@ -462,7 +461,7 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				if (typeof(self._init) == "function") self._init();
 
 				// the promises have all been fulfilled so we decrement the outstanding promise count
-				self.pendingFetchCount--;
+				self._pendingFetchCount--;
 
 			}).catch(function(failedPromise) {initListPromise.done = true; console.error(failedPromise);});
 			
@@ -481,10 +480,10 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 		}
 
 		if (listPassivePromises.length > 0) {
-			this.pendingFetchCount++;
+			this._pendingFetchCount++;
 			var initListPassivePromises = Promise.all(listPassivePromises).then(function() {
 				initListPassivePromises.done = true;
-				self.pendingFetchCount--;
+				self._pendingFetchCount--;
 			}).catch(function(failedPromise) {initListPassivePromises.done = true; console.error(failedPromise);});
 
 			setTimeout(function() {
@@ -515,17 +514,17 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 		var loadMask = false;
 
 		// if these fetches should finish before any UI refresh and there are changes present, then we need to
-		// mark this.delayRefresh to true to prevent any refreshes from kicking off *and* produce a load mask (if the
+		// mark this._delayRefresh to true to prevent any refreshes from kicking off *and* produce a load mask (if the
 		// component has even supplied a load mask function)
 		if (delayRefresh == true && fetchList.length > 0) {
-			this.delayRefresh = delayRefresh;
+			this._delayRefresh = delayRefresh;
 			this.showLoadMask();
 			loadMask = true;
 		}
 
 		if (fetchList.length > 0) {
 
-			this.pendingFetchCount++;
+			this._pendingFetchCount++;
 
 			var listPromises = [];
 
@@ -558,7 +557,7 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				dataBindingPromise.done = true;
 
 				// the fetches have all completed and the component is now safe to refresh UI, so we can turn off delayRefresh
-				self.delayRefresh = false;
+				self._delayRefresh = false;
 
 				// if we created a load mask earlier on, then we now need to remove it
 				if (loadMask == true) self.hideLoadMask();
@@ -568,7 +567,7 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 					queueRefresh({"instanceId": self.baseClassInstance,"refresh":function() { self._refresh();}});
 				}
 
-				self.pendingFetchCount--;
+				self._pendingFetchCount--;
 
 			}).catch(function(failedPromise) {dataBindingPromise.done = true; console.error(failedPromise);});
 
@@ -594,10 +593,10 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 
 		// if the component hasn't been initialized and there's no initialization in-progress,
 		// then we need to initialize it before attempting a render
-		if (this.initialized == false && this.pendingInit == false) this.init();
+		if (this.initialized == false && this._pendingInit == false) this.init();
 
 		// if the initialization is in progress, then render the 'loading' display
-		if (this.initialized == false && this.pendingInit == true) {
+		if (this.initialized == false && this._pendingInit == true) {
 
 			// if the component has defined a loading render method, then we use that first
 			if (typeof this._renderLoading === "function") {
@@ -615,7 +614,7 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 		} else {
 			// if the component does not have any pending changes and it has already been fully rendered once
 			// then we don't need to re-render this component, we can just return what has already been rendered
-			if (this._refreshList instanceof Array && this._refreshList.length == 0 && this.initRendered == true) {
+			if (this._refreshList instanceof Array && this._refreshList.length == 0 && this._initRendered == true) {
 				var jqDom = this.jqDom;
 
 			// else the component does have pending changes or has not been fully rendered yet -- so we must invoke the normal .render() method.
@@ -649,7 +648,7 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				}
 				
 				// the component has now been fully rendered, so mark the initial render boolean as true
-				this.initRendered = true;
+				this._initRendered = true;
 			}
 		}
 		
@@ -666,10 +665,10 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 
 		// if the component hasn't been initialized and there's no initialization in-progress,
 		// then we need to initialize it before attempting a render
-		if (this.initialized == false && this.pendingInit == false) this.init();
+		if (this.initialized == false && this._pendingInit == false) this.init();
 
 		// if the initialization is in progress, then render the 'loading' display
-		if (this.initialized == false && this.pendingInit == true) {
+		if (this.initialized == false && this._pendingInit == true) {
 
 			// if the component has defined a loading render method, then we use that first
 			if (typeof this._renderLoading === "function") {
@@ -901,9 +900,9 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 
 		// if the component hasn't been initialized yet, then we ignore any refresh requests. a component
 		// cannot be rendered until it has been initialized so therefore there's nothing to refresh yet.
-		// we also cannot perform a refresh if this.delayRefresh is set to true -- implies that there are pending data
+		// we also cannot perform a refresh if this._delayRefresh is set to true -- implies that there are pending data
 		// requests that need to complete before we can do any updating
-		if (this.initialized == true && this.delayRefresh == false) {
+		if (this.initialized == true && this._delayRefresh == false) {
 
 			if (this.jqDom === null) {
 				this.render();
@@ -1141,8 +1140,8 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				self.data = null;
 				self._data = null;
 				self.templates = null;
-				self.uiBindings = null;
-				self.dataBindings = null;
+				self._uiBindings = null;
+				self._dataBindings = null;
 				self.initList = null;
 				self.showLoadMask = null;
 				self.hideLoadMask = null;
@@ -1168,8 +1167,8 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 		});
 		
 		var noPendingRefreshes = (this._refreshList === null || this._refreshList.length === 0);
-		var noPendingFetches = (this.pendingFetchCount === null || this.pendingFetchCount === 0);
-		var noPendingInit = (this.pendingInit === false);
+		var noPendingFetches = (this._pendingFetchCount === null || this._pendingFetchCount === 0);
+		var noPendingInit = (this._pendingInit === false);
 		
 		return (allChildrenReady === true && noPendingRefreshes && noPendingFetches && noPendingInit);
 	};
