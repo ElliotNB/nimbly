@@ -1,6 +1,6 @@
 /*
  * 	Nimbly
- *	Version 0.0.4
+ *	Version 0.0.5
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
@@ -21,7 +21,7 @@
  *	5. Allow for easy re-factors of jQuery-driven legacy code.
  *	6. Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
  */
-var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
+var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 
 	if (typeof $ === "undefined") throw new Error("Nimbly requires jQuery 1.9+.");
 	if (typeof Mustache === "undefined") throw new Error("Nimbly requires Mustache.");
@@ -49,6 +49,31 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 			}
 		},10);
 	};
+	
+	//monitoredInsertion is an array of every component that has been rendered with a _afterInDocument defined that has not
+	// already been inserted into the document.
+	var monitoredInsertion = [];
+	
+	// observe all mutations on the document, we use this as a means to trigger the `_afterInDocument` method
+	// when a component has been inserted to the page
+	var documentObserver = new MutationObserver(function(mutations) {
+		var i = monitoredInsertion.length;
+		
+		// loop over every component that we're monitoring for insertion into the DOM
+		while (i--) {
+			// if the component is now in the document
+			if (document.contains(monitoredInsertion[i].jqDom[0])) {
+				
+				// invoke the _afterInDocument lifecycle method for the component
+				monitoredInsertion[i]._afterInDocument();
+				
+				// the component is now in the document so we can remove it from the array of components we're monitoring
+				// for insertion into the document
+				monitoredInsertion.splice(i,1);
+			}
+		}
+	});
+	documentObserver.observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
 
 	/* 	Function: _getTemplate(templateElmtId)
 			Simple utility function for retrieving our Mustache templates
@@ -360,7 +385,7 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				}
 			};
 		});
-
+		
 		// Unless we've been told to delay the initialization of the component, fire off initialization immediately
 		var delayInit = this.options.delayInit || false;
 		if (delayInit == false) this.init();
@@ -591,6 +616,8 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 	 */
 	constructor.prototype.render = function() {
 
+		var self = this;
+	
 		// if the component hasn't been initialized and there's no initialization in-progress,
 		// then we need to initialize it before attempting a render
 		if (this.initialized == false && this._pendingInit == false) this.init();
@@ -649,8 +676,22 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				// _renderFinalize was renamed to _afterRender on 10/21/2018 -- _renderFinalize is deprecated and will eventually be removed
 				if (typeof this._afterRender === "function") this._afterRender(jqDom);
 				
+				// if this is the first time the component has been rendered, then add this component to the insertion monitoring list
+				if (this._initRendered === false) {
+					if (typeof this._afterInDocument === "function" && monitoredInsertion.indexOf(this) === -1) monitoredInsertion.push(this);
+					
+					// check if this component has any child components (or nested child components) with the _afterInDocument lifecycle method defined
+					this.eachChildComponent(function(childComponent) {
+						if (typeof childComponent._afterInDocument === "function" && monitoredInsertion.indexOf(childComponent) === -1) {
+							monitoredInsertion.push(childComponent);
+						}
+					}, true);
+					
+				}
+				
 				// the component has now been fully rendered, so mark the initial render boolean as true
 				this._initRendered = true;
+				
 			}
 		}
 		
@@ -1001,6 +1042,15 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 					
 					// _postRefresh was renamed to _afterRefresh on 10/21/2018 -- _postRefresh is deprecated and will eventually be removed
 					if (typeof this._afterRefresh === "function") this._afterRefresh(true, jqOldComponent);
+					
+					if (typeof this._afterInDocument === "function") monitoredInsertion.push(this);
+					
+					// check if this component has any child components (or nested child components) with the _afterInDocument lifecycle method defined
+					this.eachChildComponent(function(childComponent) {
+						if (typeof childComponent._afterInDocument === "function" && monitoredInsertion.indexOf(childComponent) === -1) {
+							monitoredInsertion.push(childComponent);
+						}
+					}, true);
 
 				}
 
@@ -1031,13 +1081,22 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 			This method is resposible for invoking a callback function for each child component registered on this component.
 		Parameters:
 			handler - function, accepts three parameters: 1. the current section name (string), 2. the child component (object) and 3. a callback method to remove the child component (function)
+			includeNested - boolean, optional, if set to true then we will iterate over both the nested child *and* any children of those children recursively
 	*/
-	constructor.prototype.eachChildComponent = function(handler) {
+	constructor.prototype.eachChildComponent = function(handler, includeNested) {
 		var self = this;
 		for (var sectionName in this.childComponents) {
 			var a = this.childComponents[sectionName].length;
 			while (a--) {
+				
 				if (sectionName === "default") {
+					
+					// if we've included nested child components in this lookup (as opposed to only the top-level immediate child components),
+					// then we must invoke eachChildComponent recursively for all nested child components.
+					if (includeNested === true) {
+						this.childComponents[sectionName][a].eachChildComponent(handler, includeNested);
+					}
+					
 					handler(this.childComponents[sectionName][a], sectionName, function(destroyComp) {
 						
 						// by default, we destroy the component when it is removed. destroyComp can be set to false when you just want to unregister the component
@@ -1047,6 +1106,13 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 				} else {
 					var b = this.childComponents[sectionName][a].length;
 					while (b--) {
+						
+						// if we've included nested child components in this lookup (as opposed to only the top-level immediate child components),
+						// then we must invoke eachChildComponent recursively for all nested child components.
+						if (includeNested === true) {
+							this.childComponents[sectionName][a][b].eachChildComponent(handler, includeNested);
+						}
+						
 						handler(this.childComponents[sectionName][a][b], sectionName, function(destroyComp) {
 							// by default, we destroy the component when it is removed. destroyComp can be set to false when you just want to unregister the component
 							if (destroyComp === true || typeof destroyComp === "undefined") self.childComponents[sectionName][a][b].destroy();
@@ -1184,9 +1250,9 @@ var Nimbly = function($,Mustache,ObservableSlim,HTMLElement) {
 };
 
 if (typeof module === "undefined") {
-	window["Nimbly"] = Nimbly($,Mustache,ObservableSlim,HTMLElement);
+	window["Nimbly"] = Nimbly($,Mustache,ObservableSlim,MutationObserver,HTMLElement);
 } else {
-	module.exports = function($,Mustache,ObservableSlim,HTMLElement) {
-		return Nimbly($,Mustache,ObservableSlim,HTMLElement);
+	module.exports = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
+		return Nimbly($,Mustache,ObservableSlim,MutationObserver,HTMLElement);
 	};
 }

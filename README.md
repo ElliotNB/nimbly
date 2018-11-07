@@ -29,6 +29,21 @@ Nimbly requires the following libraries:
 * **[Mustache.js 2.0.0+](https://github.com/janl/mustache.js)**
 * **[ObservableSlim 0.1.0+](https://github.com/ElliotNB/observable-slim)**
 
+# Install
+
+```html
+<script src="observable-slim.min.js"></script>
+<script src="jquery.min.js"></script>
+<script src="mustache.min.js"></script>
+<script src="nimbly.min.js"></script>
+```
+
+Also available via NPM:
+
+```
+$ npm install nimbly
+```
+
 # Parameters
 
 The Nimbly constructor accepts four parameters:
@@ -147,8 +162,10 @@ The implementation of lifecycle hooks is optional.
 	* *Parameters:*
 		* `fullRefresh` - boolean, set to true if the entire component was refreshed, set to false is the refresh only affected part of the component.
 		* `jqOldDom` - jQuery-referenced DocumentFragment of the component's previous display state.
+		
+4. **`_afterInDocument()`** - invoked immediately after the component is inserted into the document for the first time. Re-invoked after every full refresh of the component, but not a partial refresh. Useful for performing manipulations that must be done in the visible `document`, such as drawing `<canvas>` elements or conditionally sizing elements with JavaScript.
 
-4. **`_destroy()`** - invoked immediately before a component is destroyed. A place to perform any component-specific clean-up procedures and avoid memory leaks.
+5. **`_destroy()`** - invoked immediately before a component is destroyed. A place to perform any component-specific clean-up procedures and avoid memory leaks.
 
  	
 # Settings

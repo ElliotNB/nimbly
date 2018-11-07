@@ -5,6 +5,7 @@ var fs = require('fs');
 var Mustache = require('mustache');
 var ObservableSlim = require('observable-slim');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+var MutationObserver = function() { return {"observe":function() {return null}}; };
 
 // the Promise returned by this function will resolve when the component is not initliaziing,
 // does not have any UI updates pending and is not waiting for any fetch (data retrieval) methods to return.
@@ -35,7 +36,7 @@ describe('HelloWorld component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var Nimbly = require("../../nimbly.js")($,Mustache,ObservableSlim,Object);
+	var Nimbly = require("../../nimbly.js")($,Mustache,ObservableSlim,MutationObserver,Object);
 	var GrandChildComp = require("../GrandChildComp.js")($,Mustache,Nimbly);
 	var PersonData = require("../PersonData.js")($,Mustache,Nimbly);
 	var ListItemComp = require("../ListItemComp.js")($,Mustache,Nimbly,GrandChildComp);
