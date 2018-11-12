@@ -1,6 +1,6 @@
 /*
  * 	Nimbly
- *	Version 0.0.5
+ *	Version 0.0.6
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
@@ -318,7 +318,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 
 				// fetchList is used to store the names of the methods we must invoke to retrieve new data. the updates done by the _fetch* methods
 				// will typically then trigger ui refreshes after the ajax request returns
-				var fetchList = [];
+				var fetchList = {};
 
 				// loop over every change that was just made to this.data and see if it qualifies against any data bindings.
 				// if it does match any data bindings, then we will need to update the appropriate portions of the rendered component.
@@ -366,7 +366,16 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 							if (self._dataBindings[dataBinding].delayRefresh == true) delayRefresh = true;
 
 							// append to the fetchList array which fetch methods we will need to invoke
-							var fetchList = fetchList.concat(self._dataBindings[dataBinding].methods);
+							// fetchList = fetchList.concat(self._dataBindings[dataBinding].methods);
+							var a = self._dataBindings[dataBinding].methods.length;
+							while (a--) {
+								if (typeof fetchList[self._dataBindings[dataBinding].methods[a]] === "undefined") {
+									fetchList[self._dataBindings[dataBinding].methods[a]] = [];
+								}
+								
+								fetchList[self._dataBindings[dataBinding].methods[a]].push(changes[i]);
+							}
+							
 						}
 					}
 
@@ -541,36 +550,35 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 		// if these fetches should finish before any UI refresh and there are changes present, then we need to
 		// mark this._delayRefresh to true to prevent any refreshes from kicking off *and* produce a load mask (if the
 		// component has even supplied a load mask function)
-		if (delayRefresh == true && fetchList.length > 0) {
+		if (delayRefresh == true && Object.keys(fetchList).length > 0) {
 			this._delayRefresh = delayRefresh;
 			this.showLoadMask();
 			loadMask = true;
 		}
 
-		if (fetchList.length > 0) {
+		if (Object.keys(fetchList).length > 0) {
 
 			this._pendingFetchCount++;
 
 			var listPromises = [];
 
 			// loop over each fetch method passed into this method
-			var i = fetchList.length;
-			while (i--) {
+			for (var fetchMethod in fetchList) {
 				// Create a promise for the data fetch method
-				var fetchPromise = new Promise((function(i) {
+				var fetchPromise = new Promise((function(fetchMethod) {
 					return function(resolve, reject) {
-						if (typeof(self[fetchList[i]]) == "function") {
-							self[fetchList[i]](resolve,reject);
+						if (typeof(self[fetchMethod]) == "function") {
+							self[fetchMethod](resolve,reject,fetchList[fetchMethod]);
 						} else {
-							throw new Error("Nimbly::_fetch cannot continue, the method "+self.className+"."+fetchList[i]+"() does not exist or is not a function.");
+							throw new Error("Nimbly::_fetch cannot continue, the method "+self.className+"."+fetchMethod+"() does not exist or is not a function.");
 						}
 					}
-				})(i)).catch((function(i) {
+				})(fetchMethod)).catch((function(fetchMethod) {
 					return function(error) {
 						console.error(error);
-						throw new Error("An error occured in the "+self.className+"."+fetchList[i]+"() method.");
+						throw new Error("An error occured in the "+self.className+"."+fetchMethod+"() method.");
 					}
-				})(i));
+				})(fetchMethod));
 
 				// add the promise to the full list of promises
 				listPromises.push(fetchPromise);

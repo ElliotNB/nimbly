@@ -2,6 +2,16 @@
 
 [![Build Status](https://travis-ci.org/ElliotNB/nimbly.svg?branch=master)](https://travis-ci.org/ElliotNB/nimbly) [![Coverage Status](https://coveralls.io/repos/github/ElliotNB/nimbly/badge.svg?branch=master)](https://coveralls.io/github/ElliotNB/nimbly?branch=master)
 
+https://github.com/elliotnb/nimbly
+
+Version 0.0.6
+
+Licensed under the MIT license:
+
+http://www.opensource.org/licenses/MIT
+
+## Overview
+
 Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
 
 * Encourage adoption of SPA best practices:
@@ -11,7 +21,7 @@ Nimbly is a JavaScript component framework for single page applications. The obj
     * Elimination of explicit DOM manipulations.
     * Dependency injection.
     * Automated unit testing.
-	* Loosely coupled modular design.
+	* Loosely coupled modular components.
 * Encourage expressive and easy-to-follow code:
 	* Reduce boilerplate code.
 	* Components follow a common structure and organization.
@@ -21,7 +31,14 @@ Nimbly is a JavaScript component framework for single page applications. The obj
 * Facilitate easier re-factors of jQuery-heavy legacy code.
 * Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
 
-# Requirements
+**What makes Nimbly different?**
+
+* **Fewer abstractions** - Nimbly doesn't abstract away from the DOM, Nimbly embraces the DOM. Components render to DOMNodes and event handlers are bound with vanilla JS or jQuery. Nimbly components undergo minimal transformations and no pre-compiling -- the code you write is what ends up in the browser.
+* **No DSLs** - If you prefer, you can use plain HTML, CSS and JavaScript. You don't need to learn another domain specific language (e.g., JSX).
+* **Easier to debug** - fewer abstractions, no DSLs and ES5 support without compiling means that Nimbly components are relatively easy to debug. Errors result in much shorter stack traces than other major JS frameworks.
+* **"Plays nice"** - Nimbly is entirely self-contained and does not "take over" a page. Nimbly is perfectly happy existing alongside other non-Nimbly components.
+
+## Requirements
 
 Nimbly requires the following libraries:
 
@@ -29,7 +46,7 @@ Nimbly requires the following libraries:
 * **[Mustache.js 2.0.0+](https://github.com/janl/mustache.js)**
 * **[ObservableSlim 0.1.0+](https://github.com/ElliotNB/observable-slim)**
 
-# Install
+## Install
 
 ```html
 <script src="observable-slim.min.js"></script>
@@ -44,7 +61,7 @@ Also available via NPM:
 $ npm install nimbly
 ```
 
-# Parameters
+## Parameters
 
 The Nimbly constructor accepts four parameters:
 
@@ -57,7 +74,7 @@ The Nimbly constructor accepts four parameters:
 4. **`options`** - Object, optional, overrides the `defaults` by merging over the top of it.
 
 
-# Properties
+## Properties
 
 All Nimbly components have the following public properties:
 
@@ -77,11 +94,11 @@ All Nimbly components have the following public properties:
 
 8. **`data`** - ES6 Proxy, serves as a proxy to the component state data (this._data) and enables the component to observe any changes that occur to the data. All modifications to component data should be made through this property.
 
-# Base Class Methods
+## Base Class Methods
 
 These methods are implemented by the Nimbly base class and are available on all components that extend Nimbly:
 
-## Public
+### Public
 
 All Nimbly components have the following public methods:
 
@@ -110,7 +127,7 @@ All Nimbly components have the following public methods:
 	* *Parameters:* 
 		* `handler` - function, required, accepts three parameters: 1. the current section name (string), 2. the child component (object) and 3. a callback method to remove the child component (function)
 
-## Protected
+### Protected
 
 JavaScript does not support protected methods, but the following methods are **intended** to be used as protected methods. They should not be invoked externally, but they may be invoked within component class that extends the `Nimbly` base class.
 	
@@ -129,7 +146,7 @@ JavaScript does not support protected methods, but the following methods are **i
 	* *Parameters:* None.
 	* *Returns:* Nothing.
 
-# Component Methods
+## Component Methods
 
 The following methods are implemented by Nimbly components.
 
@@ -146,7 +163,7 @@ The following methods are implemented by Nimbly components.
 		* `reject` - Function, required, invoked if the `_fetch*` method is unsuccessful in retrieving data and updating `this.data`.
 	* *Returns:* Nothing.
 
-## Lifecycle Hooks
+### Lifecycle Hooks
 
 Components have a lifecycle that is managed by Nimbly. Nimbly offers lifecycle hooks that provide visibility into key life moments and the ability to act when they occur.
 
@@ -168,7 +185,7 @@ The implementation of lifecycle hooks is optional.
 5. **`_destroy()`** - invoked immediately before a component is destroyed. A place to perform any component-specific clean-up procedures and avoid memory leaks.
 
  	
-# Settings
+## Settings
 
 The `defaults` and `options` parameters are the two most significant parameters passed into the Nimbly constructor. Together they dictate how the component initializes itself, how the UI should update in response to data changes, what actions to take after data changes occur, what templates the component should use, etc.
 
@@ -275,184 +292,13 @@ The full list of component settings is as follows:
 
 9. **`delayInit`** - Boolean, optional, defaults to true. If true, then we do not fire off the _fetch* methods defined in the initList automatically when the component is initialized -- we would have do it manually at a later time using the this.init() method.
 	
-# Usage
+## Usage
 
-## Sample Component
+### Sample Component
 
-To see a live working example of a component built with Nimbly, please visit the **[Hello World component jsFiddle](https://jsfiddle.net/rh74dj6f/)**.
+Please see the [sample folder](sample/) for examples of components built with Nimbly.
 
-The code for the above jsFiddle is as follows:
-
-**JavaScript:**
-```javascript
-class HelloWorld extends Nimbly {
-
-	constructor(data, options) {
-        
-		const defaults = {
-			"tagName":"hello-world"
-			,"templates":{
-				"t4m_template_1":`
-					<div>
-						<p class="hello_user_container">
-							{{^have_name}}Hello world!{{/have_name}}
-						{{#have_name}}Hello <b>{{user_name}}</b>!{{/have_name}}
-					  </p>
-					  <p>
-						Set your name:
-							<input type="text" value="" class="user_name_text"> <small>this.data.user_name = $(this).val();</small>
-					  </p>
-					  <p class="patient_data_container">
-						Now viewing: {{patient_name}} <br>
-						Date of birth: {{birth_date}} <br>
-						Date of admission: {{admit_date}}<br>
-					  </p>
-						<p>
-						<input type="button" value="Change patient name" class="patient_name_change_btn"> <small>this.data.patient_name = 'Bobby Smith';</small> <br><br>
-						<input type="button" value="Switch patient" class="load_next_patient_btn"> <small>this.data.person_id = 5555555;</small>
-					  </p>
-					</div>
-				`
-			}
-			,"loadingTemplate":null
-			,"initList":[
-				{"method":"_fetchPatient","preventRender":true}
-			]
-			,"uiBindings":{
-				"user_name":[".hello_user_container"]
-				,"patient_name":[".patient_data_container"]
-				,"admit_date":[".patient_data_container"]
-				,"birth_date":[".patient_data_container"]
-			}
-			,"dataBindings":{
-				"person_id":{"delay_refresh":true,"methods":["_fetchNewPatient"]} 
-			}
-			,"data":{
-				"user_name":""
-				,"person_id":3453456
-				,"patient_name":null
-				,"birth_date":null
-				,"admit_date":null
-			}
-			,"delayInit":false
-		};
-		
-		// invoke the base class constructor
-		super("HelloWorld", defaults, data || {}, options || {});
-	};
-
-	// the render method is the only place where the UI for the component is generated. no other portion
-	// of the component is allowed to modify the display or make any manual DOM manipulations. this gives
-	// non-author devs a single place to inspect when they want to understand the display logic and figure
-	// out why a component looks the way it does
-	_render() {
-		
-		var self = this;
-		
-		var tplData = {
-			"have_name":(this.data.user_name.length > 0 ? true : false)
-			,"user_name":this.data.user_name
-			,"patient_name":this.data.patient_name
-			,"birth_date":this.data.birth_date
-			,"admit_date":this.data.admit_date
-		};
-
-		// render using the first template defined by our component
-		var jqDom = $(Mustache.render(this.templates["t4m_template_1"], tplData));
-    
-		// when the user types in their name, we update this.data.user_name which then
-		// triggers a uiBinding to refresh the .hello_user_container div
-		jqDom.find(".user_name_text").on("keyup", function() {
-			self.data.user_name = $.trim($(this).val());
-		});
-
-		// when the user clicks this button, we change this.data.patient_name to "Bobby Smith"
-		// which in turn triggers a uiBinding to refresh the .patient_data_container div
-		jqDom.find(".patient_name_change_btn").on("click", function() {
-			self.data.patient_name = "Bobby Smith";
-		});
-
-		// when the user clicks this button, we update this.data.person_id. unlike the two buttons above,
-		// there is no uiBinding for this.data.person_id, but there is a dataBinding. The dataBinding for "person_id"
-		// invokes the _fetchLarry method. The _fetchNewPatient method fires off an XHR request that retrieves 
-		// new patient data once that new patient data is stored on this.data it triggers a uiBinding 
-		// which updates the display automatically
-		jqDom.find(".load_next_patient_btn").on("click", function() {
-			self.data.person_id = 5555555;
-		});
-			
-		return jqDom;
-    
-	};
-  
-	// this is a fetch method retrives the data set for our imaginary Charlie patient. this is the first patient we load
-	// because _fetchPatient is listed in the "initList" above so this fetch method gets executed when the component
-	// is initialized. we're using the jsfiddle echo request -- it simply echos back the data in the URI
-	_fetchPatient(resolve, reject) {
-
-		var self = this;
-
-		$.ajax({
-			url:'/echo/js/?js={"patient_name":"Charlie Smith","birth_date":"August 9th, 1987","admit_date":"January 1st, 2018"}',
-			dataType:"json",
-			success: function (response) {
-			
-				// at this point we've successfully retrieved the patient data. now we need to store the patient data
-				// on the component by updating this.data. when we make these updates to this.data, it will trigger
-				// uiBindings that will refresh the appropriate parts of the component with the patient info
-				self.data.patient_name = response.patient_name;
-				self.data.birth_date = response.birth_date;
-				self.data.admit_date = response.admit_date;
-				resolve();
-			},
-			error: function (error) {
-				console.error(error);
-				reject();
-			}
-		});
-
-	};
-  
-	// this is a fetch method retrives the data set for our next patient, Larry. this method is invoked whenever
-	// any change is made to this.data.person_id because of the dataBinding we've defined above. this XHR is just a
-	// hard-coded example, but in reality a _fetch* method would use this.data.person_id to request the correct data
-	// for whichever patient was just selected.
-	_fetchNewPatient(resolve, reject) {
-		var self = this;
-		$.ajax({
-			url:'/echo/js/?js={"patient_name":"Larry Anderson","birth_date":"October 13th, 1985","admit_date":"January 2nd, 2018"}',
-			dataType:"json",
-			success: function (response) {
-			
-				// now that we've successfully retrieved the patient data, we need to store it on the component by
-				// updating this.data. when we modify this.data it will trigger uiBindings to update the appropriate 
-				// part of the DOM
-				self.data.patient_name = response.patient_name;
-				self.data.birth_date = response.birth_date;
-				self.data.admit_date = response.admit_date;
-				resolve();
-			},
-			error: function (error) {
-				console.error(error);
-				reject();
-			}
-		});
-
-	};
-	
-};
-
-// instantiate the component, accept the default config, not passing in any custom options
-var test = new HelloWorld();
-
-// render the component 
-var rendered = test.render();
-
-// insert the component to the page
-$("body").append(rendered);
-```
-
-## Registering Child Components
+### Registering Child Components
 
 If your component renders and inserts other components within itself, then those child components must be explicitly registered. Typically the registration of child components is done directly in the `_render` method or `_init` method.
 
@@ -468,9 +314,9 @@ this.registerChild(this.issueList);
 
 Registering a child component will enable Nimbly to handle component refreshes without ballooning memory usage and avoid unnecessary child component re-renders.
 
-# IE11 Notes
+## IE11 Notes
 
-## Proxy polyfill restrictions
+### Proxy polyfill restrictions
 
 Nimbly relies on the Observable Slim library to observe changes to `this.data` and trigger `uiBindings` and `dataBindings`. The Observable Slim library in turn relies on ES6 `Proxy` to perform those observations. ES6 `Proxy` is supported by Chrome 49+, Edge 12+, Firefox 18+, Opera 36+ and Safari 10+, but it is not supported by IE11.
 
@@ -485,7 +331,7 @@ For IE11, the `Proxy` polyfill must be used. However, the polyfill does have lim
 1. Declare all properties on `this.data` at the time of initialization. New properties on `this.data` cannot be observed.
 2. Do not use `uiBindings` or `dataBindings` that rely a property being deleted (e.g., `delete this.data.some_property`).
 
-## Bypassing the Proxy for reads
+### Bypassing the Proxy for reads
 
 IE11 performs considerably worse than other modern browsers when iterating through very large nested objects. The performance degradation is only exacerbated with the `Proxy` polyfill, because `Proxy` intercepts both modifying object properties and reading object properties.
 

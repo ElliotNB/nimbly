@@ -26,7 +26,7 @@ gulp.task('pre-test', function () {
 });
 
 gulp.task('test', ['pre-test'], function() {
-	return gulp.src(['sample/test/test.js'])
+	return gulp.src(['test/suite/test.js'])
 	.pipe(mocha({compilers:babel, exit: true}))
 	.once('error', err => {
 		process.exit(1);
