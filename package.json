@@ -29,8 +29,8 @@
     ]
   },
   "scripts": {
-    "test": "nyc mocha \"./sample/test/*.js\"",
-    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha sample/test/ --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "test": "nyc mocha \"./test/suite/*.js\"",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha test/suite/ --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "repository": {
     "type": "git",
