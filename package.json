@@ -43,7 +43,7 @@
     "url": "https://github.com/ElliotNB/nimbly/issues"
   },
   "dependencies": {
-    "observable-slim": "0.1.0",
+    "observable-slim": "0.1.1",
     "jquery": "3.3.1",
     "mustache": "3.0.0"
   }
