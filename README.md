@@ -161,6 +161,7 @@ The following methods are implemented by Nimbly components.
 	* *Parameters:*
 		* `resolve` - Function, required, invoked if the `_fetch*` method is successful in retrieving data and updating `this.data`.
 		* `reject` - Function, required, invoked if the `_fetch*` method is unsuccessful in retrieving data and updating `this.data`.
+		* `changes` - Array of objects, optional, if the `_fetch*` method is invoked as a result of a `dataBinding` a copy of the changes that triggered the `dataBinding` is passed along via this parameter.
 	* *Returns:* Nothing.
 
 ### Lifecycle Hooks
