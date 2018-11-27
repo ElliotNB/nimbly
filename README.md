@@ -138,14 +138,6 @@ JavaScript does not support protected methods, but the following methods are **i
 		
 	* *Returns:* Nothing.
 
-2. **`showLoadMask()`** - Executed when we need to display a loading mask over the component. Loading masks are displayed when we fetch data that must be retrieved before the UI can refresh. Defined via `defaults` or `options`.
-	* *Parameters:* None.
-	* *Returns:* Nothing.
-
-3. **`hideLoadMask()`** - Executed when we need to hide the loading mask over the component. Defined via `defaults` or `options`.
-	* *Parameters:* None.
-	* *Returns:* Nothing.
-
 ## Component Methods
 
 The following methods are implemented by Nimbly components.
@@ -162,6 +154,14 @@ The following methods are implemented by Nimbly components.
 		* `resolve` - Function, required, invoked if the `_fetch*` method is successful in retrieving data and updating `this.data`.
 		* `reject` - Function, required, invoked if the `_fetch*` method is unsuccessful in retrieving data and updating `this.data`.
 		* `changes` - Array of objects, optional, if the `_fetch*` method is invoked as a result of a `dataBinding` a copy of the changes that triggered the `dataBinding` is passed along via this parameter.
+	* *Returns:* Nothing.
+	
+4. **`showLoadMask()`** - Executed when we need to display a loading mask over the component. Loading masks are displayed when we fetch data that must be retrieved before the UI can refresh.
+	* *Parameters:* None.
+	* *Returns:* Nothing.
+
+5. **`hideLoadMask()`** - Executed when we need to hide the loading mask over the component.
+	* *Parameters:* None.
 	* *Returns:* Nothing.
 
 ### Lifecycle Hooks
@@ -226,11 +226,7 @@ The full list of component settings is as follows:
 
 3. **`loadingTemplate`** - String, optional, if this component needs to display a loading message or a loading spinner, specify that template here.
 
-4. **`showLoadMask`** - Function, optional, executed when we need to display a loading mask over the component. Loading masks are typically displayed when we fetch data that must be retrieved before the UI can render.
-
-5. **`hideLoadMask`** - Function, optional, executed when we need to hide the loading mask over the component.
-
-6. **`initList`** - Array, optional, list of "fetch" methods (defined on the component, see below for details) that should be invoked in order to initialize the components. 
+4. **`initList`** - Array, optional, list of "fetch" methods (defined on the component, see below for details) that should be invoked in order to initialize the components. 
 
 	Each item of `initList` is an object containing two properties: `method` and `preventRender`. `method` is a string that refers to which method on the component should be invoked and `preventRender` is a boolean which when set to true will prevent the component from rendering until the initialization method has resolved (the loading template will be displayed until then).
 
@@ -245,7 +241,7 @@ The full list of component settings is as follows:
 	
 	The methods defined in the `initList` (as well as for the `dataBindings` below) should accept two parameters `resolve` and `reject` which should be invoked as appropriate when the method is complete.
 
-6. **`uiBindings`** - Object, optional, key value pairs that define what changes to `this.data` should trigger what portions of the component to update. The key is a string or regular expression that defines which part of `this.data` should be observed for changes. The value is either an array or boolean. If set to true, then the whole component will refresh. If set to an array, then the portions of the component that match the CSS selectors in the array will be refreshed. In the example below, a change to `this.data.new_issue.show` would trigger refresh of `<div class="t4m_issuetracker_issue_list_header"></div>` and `<div class="t4m_issuetracker_issue_list_footer"></div>`, but the rest of the component would remain unchanged. 
+5. **`uiBindings`** - Object, optional, key value pairs that define what changes to `this.data` should trigger what portions of the component to update. The key is a string or regular expression that defines which part of `this.data` should be observed for changes. The value is either an array or boolean. If set to true, then the whole component will refresh. If set to an array, then the portions of the component that match the CSS selectors in the array will be refreshed. In the example below, a change to `this.data.new_issue.show` would trigger refresh of `<div class="t4m_issuetracker_issue_list_header"></div>` and `<div class="t4m_issuetracker_issue_list_footer"></div>`, but the rest of the component would remain unchanged. 
 
 	Example:
 
@@ -259,7 +255,7 @@ The full list of component settings is as follows:
 
 	**Note:** `uiBindings` do not take effect until the component has initialized (i.e., when `this.initialized === true`). This prevents `this.data` modifications in the constructor from triggering UI refreshes.
 
-7. **`dataBindings`** - Object, optional, key value pairs that define what data `fetch` methods should be invoked when specified data changes occur. Follows the same logic as `uiBindings` above, except that instead of specifying portions of the component to refresh, the value specifies which methods should be invoked and whether or not we should delay refreshing the component until the fetch method returns. 
+6. **`dataBindings`** - Object, optional, key value pairs that define what data `fetch` methods should be invoked when specified data changes occur. Follows the same logic as `uiBindings` above, except that instead of specifying portions of the component to refresh, the value specifies which methods should be invoked and whether or not we should delay refreshing the component until the fetch method returns. 
 
 	Example:
 
@@ -277,7 +273,7 @@ The full list of component settings is as follows:
 
 	**Note:** `dataBindings` do not take effect until the component has initialized (i.e., when `this.initialized === true`). This prevents `this.data` modifications in the constructor from triggering data retrievals.
 
-8. **`data`** - Object, required, this is the default data passed into the component. often times this data is just null because it must first be populated by the _fetch* methods defined in the `initList` above. 
+7. **`data`** - Object, required, this is the default data passed into the component. often times this data is just null because it must first be populated by the _fetch* methods defined in the `initList` above. 
 
 	Example:
 
@@ -291,7 +287,7 @@ The full list of component settings is as follows:
 	}
 	```
 
-9. **`delayInit`** - Boolean, optional, defaults to true. If true, then we do not fire off the _fetch* methods defined in the initList automatically when the component is initialized -- we would have do it manually at a later time using the this.init() method.
+8. **`delayInit`** - Boolean, optional, defaults to true. If true, then we do not fire off the _fetch* methods defined in the initList automatically when the component is initialized -- we would have do it manually at a later time using the this.init() method.
 	
 ## Usage
 
