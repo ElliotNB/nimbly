@@ -157,17 +157,6 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 		*/
 		this.initList = this.options.initList || [];
 
-		/* Property: this.showLoadMask
-				Function, executed when we need to display a loading mask over the component. Loading masks are displayed when we fetch data that must be retrieved
-				before the UI can refresh.
-		*/
-		this.showLoadMask = this.options.showLoadMask || function() { return null; }
-
-		/*	Property: this.hideLoadMask
-				Function, executed when we need to hide the loading mask over the component.
-		*/
-		this.hideLoadMask = this.options.hideLoadMask || function() { return null; }
-
 		/*	Property: this._pendingInit
 				Boolean, set to true when this.init() is still actively processing.
 		*/
@@ -552,7 +541,9 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 		// component has even supplied a load mask function)
 		if (delayRefresh == true && Object.keys(fetchList).length > 0) {
 			this._delayRefresh = delayRefresh;
-			this.showLoadMask();
+			
+			// if the component has defined a load mask method to display during refresh delays, then we run the method to display the load mask
+			if (typeof this.showLoadMask === "function") this.showLoadMask();
 			loadMask = true;
 		}
 
@@ -593,7 +584,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 				self._delayRefresh = false;
 
 				// if we created a load mask earlier on, then we now need to remove it
-				if (loadMask == true) self.hideLoadMask();
+				if (loadMask == true && typeof self.hideLoadMask === "function") self.hideLoadMask();
 
 				// if there are pending UI updates (possibly triggered by these fetches), then kick off the refresh process
 				if (self._refreshList == true || self._refreshList.length > 0) {
