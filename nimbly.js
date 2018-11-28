@@ -1,6 +1,6 @@
 /*
  * 	Nimbly
- *	Version 0.0.6
+ *	Version 0.0.7
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:

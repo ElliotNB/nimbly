@@ -4,7 +4,7 @@
 
 https://github.com/elliotnb/nimbly
 
-Version 0.0.6
+Version 0.0.7
 
 Licensed under the MIT license:
 
@@ -44,7 +44,7 @@ Nimbly requires the following libraries:
 
 * **[jQuery 1.9.0+](https://github.com/jquery/jquery)**
 * **[Mustache.js 2.0.0+](https://github.com/janl/mustache.js)**
-* **[ObservableSlim 0.1.0+](https://github.com/ElliotNB/observable-slim)**
+* **[ObservableSlim 0.1.3+](https://github.com/ElliotNB/observable-slim)**
 
 ## Install
 
