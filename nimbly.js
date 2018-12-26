@@ -21,7 +21,7 @@
  *	5. Allow for easy re-factors of jQuery-driven legacy code.
  *	6. Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
  */
-var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
+var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, document) {
 
 	if (typeof $ === "undefined") throw new Error("Nimbly requires jQuery 1.9+.");
 	if (typeof Mustache === "undefined") throw new Error("Nimbly requires Mustache.");
@@ -87,6 +87,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 	var _getTemplate = function(templateElmtId) {
 
 		var templateElmt = document.getElementById(templateElmtId);
+		
 		if (templateElmt) {
 			var template = templateElmt.innerHTML.trim();
 		} else {
@@ -294,7 +295,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 			// if the component is attempting to modify this.data from inside the ._render method, then we need to throw an error.
 			// doing so is a bad practice -- it's liable to result in an infinite loop
 			if (self._renderRunning === true) {
-				throw new Error(self.className + "._render() is attempting to modify this.data. Mutating this.data while rendering is disallowed because such mutations are liable to generate infinite loops via uiBindings.");
+				throw new Error(self.className + "._render() is attempting to modify this.data. Mutating this.data while rendering is disallowed because it's likely to generate infinite loops via uiBindings.");
 			}
 		
 			// we don't process any changes until the component has marked itself as initialized, this prevents
@@ -438,7 +439,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 			// if it returns true, then we proceed to create the new promise. if it returns false, then we can
 			// skip it and go to the next initList item
 			if (typeof this.initList[i].condition === "function") {
-				if (this.initList[i].condition() == false) continue;
+				if (this.initList[i].condition.call(self) == false) continue;
 			}
 
 			// create a promise for the fetch method required for initialization
@@ -1249,9 +1250,9 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
 };
 
 if (typeof module === "undefined") {
-	window["Nimbly"] = Nimbly($,Mustache,ObservableSlim,MutationObserver,HTMLElement);
+	window["Nimbly"] = Nimbly($,Mustache,ObservableSlim,MutationObserver,HTMLElement, document);
 } else {
-	module.exports = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement) {
-		return Nimbly($,Mustache,ObservableSlim,MutationObserver,HTMLElement);
+	module.exports = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, document) {
+		return Nimbly($,Mustache,ObservableSlim,MutationObserver,HTMLElement, document);
 	};
 }

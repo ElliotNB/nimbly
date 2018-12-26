@@ -38,15 +38,19 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 			`
 		}
 		,"loadingTemplate":`<div>Loading...</div>`
-		,"initList":[{"method":"_fetchPatient","preventRender":true}]
+		,"initList":[{"method":"_fetchPatient","preventRender":true, "condition":function() {
+			// just for unit testing purposes, we've added a dummy conditional to this initList method
+			return (this.data.person_id === 3453456);
+		}
+		}]
 		,"uiBindings":{
-			"user_name":[".hello_user_container",".non_existent_class_test"]
+			"/user_nam*/":[".hello_user_container",".non_existent_class_test"]
 			,"dummy_field":[".throw_error_dupe"]
 			,"list_item_count":[".list_container"]
 			,"person_id":[".person_id_container"]
 		}
 		,"dataBindings":{
-			"person_id":{"delayRefresh":true,"methods":["_fetchNewPatient"]}
+			"/person_i*/":{"delayRefresh":true,"methods":["_fetchNewPatient"]}
 		}
 		,"data":{
 			"user_name":""
@@ -119,6 +123,10 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 			return jqDom;
 
 		};
+		
+		_afterInDocument() {
+			// do nothing, just for unit testing coverage purposes
+		}
 
 		_fetchPatient(resolve, reject) {
 			var self = this;

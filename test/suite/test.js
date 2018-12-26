@@ -18,6 +18,78 @@ var whenReady = function(component) {
 	});
 };
 
+
+describe('HelloWorld ES5 component test suite.', function() {
+	
+	// web components might take a bit longer to render if ajax replies are slow
+	// extend the default timeout from 2 seconds to 5 seconds
+	this.timeout(5000);
+
+	// create a fake DOM using jsdom
+	var window = (new jsdom(fs.readFileSync("./test/index.es5.html"))).window;
+	global.document = window.document;
+
+	// initialize jquery with the fake DOM we've created
+	var $ = require('jquery')(window);
+
+	// apply adjustments to jquery so that ajax requests work in a node environment
+	$.support.cors = true;
+	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
+
+	// initialize the base class and our components with all required dependencies
+	var Nimbly = require("../../nimbly.js")($,Mustache,ObservableSlim,MutationObserver,Object, window.document);
+	
+	var PersonData = require("../PersonData.es5.js")($,Mustache,Nimbly);
+	var HelloWorld = require("../HelloWorld.es5.js")($,Mustache,Nimbly,PersonData);
+	var helloWorld = new HelloWorld();
+	helloWorld.render();
+	
+	var observedChanges = false;
+	helloWorld.observe(function(changes) {
+		observedChanges = true;
+	});
+	
+	beforeEach(async () => {
+		await whenReady(helloWorld);
+	});
+	
+	it('Five instances of PersonData child component are rendered and inserted.', () => {
+		expect(helloWorld.jqDom.find(".patient_data_container").length).to.equal(5);
+	});
+	
+	// verify that the HelloWorld component rendered with the correct title
+	it('Initial title reads "Hello world".', () => {
+		var initialMessage = $.trim(helloWorld.jqDom.find(".hello_user_container").html());
+		expect(initialMessage).to.equal("Hello world!");
+	});
+
+	it('"Charlie Smith" is the first person displayed.', () => {
+		var charliePresent = helloWorld.jqDom.find(".patient_data_container").html().indexOf("Charlie Smith");
+		expect(charliePresent).to.be.above(-1);
+		expect(helloWorld._data.patient_name).to.equal("Charlie Smith");
+	});
+
+	it('Set a new user name.', async () => {
+		var jqUserNameTextBox = helloWorld.jqDom.find(".user_name_text");
+		jqUserNameTextBox.val("Elliot").keyup();
+
+		await helloWorld.isReady();
+
+		expect(helloWorld._data.user_name).to.equal("Elliot");
+		expect(jqUserNameTextBox.val()).to.equal("Elliot");
+	});
+	
+	it('Observe changes on a component.', () => {
+		expect(observedChanges).to.equal(true);
+	});
+	
+	it('Re-render manually.', () => {
+		var jqDom = helloWorld.render();
+		expect(jqDom.find(".patient_data_container").length).to.equal(5);
+	});
+	
+});
+
 describe('HelloWorld component test suite.', function() {
 
 	// web components might take a bit longer to render if ajax replies are slow
@@ -36,7 +108,7 @@ describe('HelloWorld component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var Nimbly = require("../../nimbly.js")($,Mustache,ObservableSlim,MutationObserver,Object);
+	var Nimbly = require("../../nimbly.js")($,Mustache,ObservableSlim,MutationObserver,Object, window.document);
 	var GrandChildComp = require("../GrandChildComp.js")($,Mustache,Nimbly);
 	var PersonData = require("../PersonData.js")($,Mustache,Nimbly);
 	var ListItemComp = require("../ListItemComp.js")($,Mustache,Nimbly,GrandChildComp);
@@ -187,6 +259,7 @@ describe('HelloWorld component test suite.', function() {
 
 	it('Data change triggers fetch method whose response triggers a data change and a refresh.', async() => {
 		var personComp = new PersonData();
+		await whenReady(personComp);
 		personComp.data.chained_request = true;
 		await whenReady(personComp);
 		expect(personComp.data.chained_update).to.equal(true);

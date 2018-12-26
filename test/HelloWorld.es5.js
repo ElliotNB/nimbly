@@ -2,8 +2,8 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData) {
 	var defaults = {
 		"tagName":"hello-world"
 		,"templates":["t4m_template_1"]
-		,"loadingTemplate":null
-		,"initList":[{"method":"_fetchPatient","preventRender":true}]
+		,"loadingTemplate":"t4m_loading_template"
+		,"initList":[{"method":"_fetchPatient","preventRender":false}]
 		,"uiBindings":{
 			"user_name":[".hello_user_container"]
 			,"dummy_field":[".throw_error_dupe"]
@@ -29,10 +29,7 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData) {
 	constructor.prototype = Object.create(Nimbly.prototype);
 	constructor.prototype.constructor = constructor;
 	
-	constructor.prototype._render = function() {
-		
-		var self = this;
-		
+	constructor.prototype._init = function() {
 		var personData = new PersonData(this.data,null);
 		this.registerChild(personData);
 		
@@ -41,6 +38,11 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData) {
 			var temp = new PersonData(this.data,null);
 			this.registerChild([temp], "repeat-person-data");
 		}
+	};
+	
+	constructor.prototype._render = function() {
+		
+		var self = this;
 		
 		var tplData = {
 			"have_name":(this.data.user_name.length > 0 ? true : false)

@@ -12,7 +12,7 @@ var PersonData = function($,Mustache,Nimbly) {
 			`
 		}
 		,"loadingTemplate":null
-		,"initList":[]
+		,"initList":[{"method":"_dummyInitWait","preventRender":true}]
 		,"uiBindings":{
 			"patient_name":true
 			,"admit_date":true
@@ -45,6 +45,16 @@ var PersonData = function($,Mustache,Nimbly) {
 				resolve();
 			},100);
 		};
+		
+		_afterInDocument() {
+			// do nothing, just for unit testing coverage purposes
+		}
+		
+		_dummyInitWait(resolve, reject) {
+			setTimeout(function() {
+				resolve();
+			}, 2000);
+		}
 	};
 	
 	return componentClass;
