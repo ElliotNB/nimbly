@@ -5,7 +5,8 @@ var fs = require('fs');
 var Mustache = require('mustache');
 var ObservableSlim = require('observable-slim');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-var MutationObserver = function() { return {"observe":function() {return null}}; };
+//var MutationObserver = function() { return {"observe":function() {return null}}; };
+var MutationObserver = require('./mock-mutation-observer.js');
 
 // the Promise returned by this function will resolve when the component is not initliaziing,
 // does not have any UI updates pending and is not waiting for any fetch (data retrieval) methods to return.
@@ -115,8 +116,9 @@ describe('HelloWorld component test suite.', function() {
 	var BadComponent = require("../BadComponent.js")($,Mustache,Nimbly);
 	var HelloWorld = require("../HelloWorld.js")($,Mustache,Nimbly,PersonData,ListItemComp);
 	var helloWorld = new HelloWorld();
-	helloWorld.render();
+	$("body").append(helloWorld.render());
 
+	
 	// before each test we instantiate the component and allow it to finish rendering before starting the tests
 	beforeEach(async () => {
 		await whenReady(helloWorld);
@@ -128,6 +130,13 @@ describe('HelloWorld component test suite.', function() {
 
 	it('Four instances of ListItemComp child component are rendered and inserted.', () => {
 		expect(helloWorld.jqDom.find(".list-item-test").length).to.equal(4);
+	});
+	
+	it('Simulated  _afterInDocument handler.', (done) => {		
+		setTimeout(() => {
+			expect(helloWorld.data.in_document).to.equal(true);
+			done();
+		}, 300);
 	});
 
 	// verify that the HelloWorld component rendered with the correct title

@@ -61,6 +61,7 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 			,"dummy_field":"foobar"
 			,"list_item_count":4
 			,"dummy_field_2":null
+			,"in_document":false
 		}
 		,"delayInit":false
 	};
@@ -125,7 +126,7 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 		};
 		
 		_afterInDocument() {
-			// do nothing, just for unit testing coverage purposes
+			this.data.in_document = true;
 		}
 
 		_fetchPatient(resolve, reject) {
