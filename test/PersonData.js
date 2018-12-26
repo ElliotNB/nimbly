@@ -37,6 +37,10 @@ var PersonData = function($,Mustache,Nimbly) {
 		constructor(data, options) {
 			super("PersonData", defaults, data || {}, options || {});
 		};
+		
+		_renderLoading() {
+			return $("<div>Testing _renderLoading</div>");
+		}
 	
 		_fetchDummyData(resolve, reject) {
 			var self = this;

@@ -141,7 +141,7 @@ describe('HelloWorld component test suite.', function() {
 
 	// verify that the HelloWorld component rendered with the correct title
 	it('Initial title reads "Hello world".', () => {
-		var initialMessage = $.trim(helloWorld.jqDom.find(".hello_user_container").html());
+		var initialMessage = $.trim(helloWorld.jqDom.find(".hello_user_container").text());
 		expect(initialMessage).to.equal("Hello world!");
 	});
 

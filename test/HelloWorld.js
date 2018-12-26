@@ -6,8 +6,10 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 			"t4m_template_1":`
 				<div>
 					<p class="hello_user_container">
-						{{^have_name}}Hello world!{{/have_name}}
-						{{#have_name}}Hello <b>{{user_name}}</b>!{{/have_name}}
+						<span class="unnecessary_test_for_skipping_child">
+							{{^have_name}}Hello world!{{/have_name}}
+							{{#have_name}}Hello <b>{{user_name}}</b>!{{/have_name}}
+						</span>
 					</p>
 					<p>
 						Set your name:
@@ -44,7 +46,7 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 		}
 		}]
 		,"uiBindings":{
-			"/user_nam*/":[".hello_user_container",".non_existent_class_test"]
+			"/user_nam*/":[".hello_user_container",".non_existent_class_test",".unnecessary_test_for_skipping_child"]
 			,"dummy_field":[".throw_error_dupe"]
 			,"list_item_count":[".list_container"]
 			,"person_id":[".person_id_container"]

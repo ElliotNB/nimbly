@@ -8,7 +8,7 @@ var GrandChildComp = function($,Mustache,Nimbly) {
 			`
 		}
 		,"loadingTemplate":null
-		,"initList":[]
+		,"initList":[{"method":"_dummyInitWait","preventRender":true}]
 		,"uiBindings":{}
 		,"dataBindings":{}
 		,"data":{}
@@ -24,6 +24,16 @@ var GrandChildComp = function($,Mustache,Nimbly) {
 		_render() {
 			var jqDom = $(Mustache.render(this.templates["t4m_template_grand_child"], null));
 			return jqDom;
+		};
+		
+		_dummyInitWait(resolve, reject) {
+			setTimeout(function() {
+				resolve();
+			}, 2000);
+		}
+		
+		_afterInDocument() {
+			//do nothing, testing coverage
 		};
 
 	};
