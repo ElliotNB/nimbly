@@ -4,7 +4,7 @@
 
 https://github.com/elliotnb/nimbly
 
-Version 0.0.7
+Version 0.0.8
 
 Licensed under the MIT license:
 
