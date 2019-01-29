@@ -1,6 +1,6 @@
 /*
  * 	Nimbly
- *	Version 0.0.7
+ *	Version 0.0.8
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
@@ -62,7 +62,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, do
 		// loop over every component that we're monitoring for insertion into the DOM
 		while (i--) {
 			// if the component is now in the document
-			if (document.contains(monitoredInsertion[i].jqDom[0])) {
+			if (document.body.contains(monitoredInsertion[i].jqDom[0])) {
 				
 				// invoke the _afterInDocument lifecycle method for the component
 				monitoredInsertion[i]._afterInDocument();
