@@ -12,9 +12,9 @@ http://www.opensource.org/licenses/MIT
 
 ## Quick Start
 
-Want to learn how to use Nimbly in 10 minutes or less? Follow this [quick start guide](https://github.com/elliotnb/nimbly/quick-start.md)!
+**Want to learn how to use Nimbly in 10 minutes or less? Follow this [quick start guide](https://github.com/ElliotNB/nimbly/blob/master/quick-start.md)!**
 
-The README below is best used as a reference manual. Nimbly beginners should first consult the quick start guide.
+The README below is best used as a reference manual. Beginners should first consult the quick start guide.
 
 ## Overview
 

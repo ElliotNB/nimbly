@@ -1,6 +1,6 @@
 ## Quick Start Guide
 
-Want to learn how to use Nimbly in 10 minutes or less? Follow this quick start guide:
+**Want to learn how to use Nimbly in 10 minutes or less? Follow this quick start guide:**
 
 1. Copy the `sample` folder to a web accessible directory.
 2. Open `sample/index.html` in a web browser.
@@ -14,7 +14,7 @@ The file `sample/hello-world-list.js` contains the child component (`HelloWorldL
 
 The file `sample/hello-world-list-item.js` contains another child component (`HelloWorldListItem`) which is used by `HelloWorldList`.
 
-There are four key concepts to understanding Nimbly components:
+**There are four key concepts to understanding Nimbly components:**
 
 1. Component state is stored on `this.data`. Modifications to `this.data` (e.g., `this.data.user_id = 123456;`) are observed by Nimbly.
 
@@ -38,7 +38,7 @@ There are four key concepts to understanding Nimbly components:
 	- `options` allows you to runtime override any default behavior defined in the component config (e.g., `const defaults`).
 
 
-To build a Nimbly component, follow these steps:
+**To build a Nimbly component, follow these steps:**
 
 1. Name the class for your component (e.g., `HelloWorld`) and encapsulate it with a dependency injection wrapper. The wrapper function argument list should contain all dependencies required by the component:
 
@@ -46,9 +46,7 @@ As per `sample/hello-world.js`:
 
 ```javascript
 const HelloWorld = function($,Mustache,Nimbly,HelloWorldList) {
-
     // component code will go here
-
 }
 
 ``` 
@@ -62,9 +60,7 @@ This `HelloWorld` component requires jQuery, Mustache, Nimbly and the child comp
 3. Beneath your component config, declare your class and extend the `Nimbly` class:
 
 ```javascript
-class componentClass extends Nimbly {
-
-}
+class componentClass extends Nimbly { }
 ```
 
 4. Create the `constructor` function for your component. Nimbly components typically accept `data` and `options` as consructor arguments.
@@ -75,11 +71,9 @@ Your `class` and `constructor` should look something like this:
 
 ```javascript
 class componentClass extends Nimbly {
-
 		constructor(data, options) {
 			super("HelloWorld", defaults, data || {}, options || {});			
 		};
-		
 }
 ```
   
