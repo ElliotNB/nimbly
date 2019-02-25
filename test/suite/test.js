@@ -38,7 +38,7 @@ describe('HelloWorld ES5 component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var Nimbly = require("../../nimbly.js")($,Mustache,ObservableSlim,MutationObserver,Object, window.document);
+	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,Object, window.document);
 	
 	var PersonData = require("../PersonData.es5.js")($,Mustache,Nimbly);
 	var HelloWorld = require("../HelloWorld.es5.js")($,Mustache,Nimbly,PersonData);
@@ -109,7 +109,7 @@ describe('HelloWorld component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var Nimbly = require("../../nimbly.js")($,Mustache,ObservableSlim,MutationObserver,Object, window.document);
+	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,Object, window.document);
 	var GrandChildComp = require("../GrandChildComp.js")($,Mustache,Nimbly);
 	var PersonData = require("../PersonData.js")($,Mustache,Nimbly);
 	var ListItemComp = require("../ListItemComp.js")($,Mustache,Nimbly,GrandChildComp);
