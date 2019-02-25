@@ -10,14 +10,22 @@ Licensed under the MIT license:
 
 http://www.opensource.org/licenses/MIT
 
+## Quick Start
+
+Want to learn how to use Nimbly in 10 minutes or less? Follow this [quick start guide](https://github.com/elliotnb/nimbly/quick-start.md)!
+
+The README below is best used as a reference manual. Nimbly beginners should first consult the quick start guide.
+
 ## Overview
 
-Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
+Nimbly is a JavaScript component framework for single page applications.
+
+The objectives of Nimbly are as follows:
 
 * Encourage adoption of SPA best practices:
 	* Templating.
     * One-way data binding.
-    * Consistent state management.
+    * Intuitive and consistent state management.
     * Elimination of explicit DOM manipulations.
     * Dependency injection.
     * Automated unit testing.

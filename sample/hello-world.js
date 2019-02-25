@@ -90,6 +90,8 @@ var HelloWorld = function($,Mustache,Nimbly,HelloWorldList) {
 		 * @param {function} reject - callback function that we invoke when the user details were not successfully retrieved.
 		 */
 		_fetchUser(resolve, reject) {
+			
+			// Using a setTimeout to simulate an async ajax request
 			setTimeout(() => {
 				if (this.data.user_id === 3333) { 
 					this.data.user_name = "Bill";
@@ -97,7 +99,7 @@ var HelloWorld = function($,Mustache,Nimbly,HelloWorldList) {
 					this.data.user_name = "Michael";
 				}
 				resolve();
-			}, 500);
+			}, 250);
 			
 		};
 		
