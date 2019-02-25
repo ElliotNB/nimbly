@@ -8,23 +8,10 @@
  *
  *	Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
  *
- *	1. Provide a common structure and organization for child components to follow.
- *	2. Reduce repetitive 'boiler plate' code contained in the child components.
- *	3. Encourage adoption of best practices and functionality of modern JS development and frameworks:
- *		- Templating.
- *		- One-way data binding.
- *		- State management.
- *		- Elimination of explicit DOM manipulations.
- *		- Dependency injection.
- *		- Automated unit testing.
- *	4. Reduce effort level for non-author devs to understand and maintain components.
- *	5. Allow for easy re-factors of jQuery-driven legacy code.
- *	6. Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
  */
-var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, document) {
+var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 
 	if (typeof $ === "undefined") throw new Error("Nimbly requires jQuery 1.9+.");
-	if (typeof Mustache === "undefined") throw new Error("Nimbly requires Mustache.");
 	if (typeof ObservableSlim === "undefined") throw new Error("Nimbly requires ObservableSlim 0.1.0+.");
 
 	var baseClassInstance = 0;
@@ -76,13 +63,23 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, do
 	documentObserver.observe(document, {attributes: false, childList: true, characterData: false, subtree:true});
 
 	/* 	Function: _getTemplate(templateElmtId)
-			Simple utility function for retrieving our Mustache templates
+			Simple utility function for retrieving component templates (typically Mustache templates).
+			
+			This function is only used for retrieving templates included on the HTML page via special script tags:
+			
+			<script type="text/template" id="template_id_goes_here">
+				<div class="hello">Hello {{first_name}}</div>
+			</script>
+			
+			Templates included via script tags can be used for supporting ES5 browsers in lieu of including the template
+			directly in the component definition using template literals for multi-line support (ES5 browsers do not support 
+			template literals nor multi-line strings and would require transpiling).
 
 		Parameters:
-			templateElmtId - String - The DOM element ID of the Mustache template.
+			templateElmtId - String - The DOM element ID of the template.
 
 		Returns:
-			String, raw HTML Mustache template.
+			String, raw HTML template.
 	*/
 	var _getTemplate = function(templateElmtId) {
 
@@ -213,7 +210,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, do
 			// if no templates were provided, throw an error because we can't continue without something to render.
 			if (this.options.templates.length == 0) {
 				throw new Error("Nimbly::constructor cannot continue -- no templates provided.");
-			// else loop over each Mustache template element identifier and add the content of the template to this.templates
+			// else loop over each template element identifier and add the content of the template to this.templates
 			} else {
 				for (var i = 0; i < this.options.templates.length; i++) {
 					// _getTemplate will throw an error if the template doesn't exist
@@ -629,7 +626,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, do
 			if (typeof this._renderLoading === "function") {
 				var jqDom = this._renderLoading();
 			} else {
-				var jqDom = $(Mustache.render(this.loadingTemplate, null));
+				var jqDom = $(this.loadingTemplate);
 			}
 			
 			// throw an error if the rendered loading display does not contain 1 top-level element.
@@ -717,7 +714,7 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, do
 			if (typeof this._renderLoading === "function") {
 				var jqDom = this._renderLoading();
 			} else {
-				var jqDom = $(Mustache.render(this.loadingTemplate, null));
+				var jqDom = $(this.loadingTemplate);
 			}
 			
 			// throw an error if the rendered loading display does not contain 1 top-level element.
@@ -778,12 +775,12 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, do
 	*/
 	constructor.prototype._render = function() {
 		// If the child class has not overwritten this method, then we just assume that it's a component
-		// with one template whose data points are provided by this.data
+		// with one static HTML template
 
 		// grab the first template
 		for (var tplName in this.templates) break;
 
-		var jqDom = $(Mustache.render(this.templates[tplName], this.data));
+		var jqDom = $(this.templates[tplName]);
 		return jqDom;
 	};
 
@@ -1250,9 +1247,9 @@ var Nimbly = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, do
 };
 
 if (typeof module === "undefined") {
-	window["Nimbly"] = Nimbly($,Mustache,ObservableSlim,MutationObserver,HTMLElement, document);
+	window["Nimbly"] = Nimbly($,ObservableSlim,MutationObserver,HTMLElement, document);
 } else {
-	module.exports = function($,Mustache,ObservableSlim,MutationObserver,HTMLElement, document) {
-		return Nimbly($,Mustache,ObservableSlim,MutationObserver,HTMLElement, document);
+	module.exports = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
+		return Nimbly($,ObservableSlim,MutationObserver,HTMLElement, document);
 	};
 }

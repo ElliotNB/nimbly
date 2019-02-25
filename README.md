@@ -41,17 +41,16 @@ The objectives of Nimbly are as follows:
 
 **What makes Nimbly different?**
 
-* **Fewer abstractions** - Nimbly doesn't abstract away from the DOM, Nimbly embraces the DOM. Components render to DOMNodes and event handlers are bound with vanilla JS or jQuery. Nimbly components undergo minimal transformations and no pre-compiling -- the code you write is what ends up in the browser.
-* **No DSLs** - If you prefer, you can use plain HTML, CSS and JavaScript. You don't need to learn another domain specific language (e.g., JSX).
-* **Easier to debug** - fewer abstractions, no DSLs and ES5 support without compiling means that Nimbly components are relatively easy to debug. Errors result in much shorter stack traces than other major JS frameworks.
-* **"Plays nice"** - Nimbly is entirely self-contained and does not "take over" a page. Nimbly is perfectly happy existing alongside other non-Nimbly components.
+* **Fewer abstractions** - Nimbly doesn't abstract away from the DOM, Nimbly embraces the DOM. Components render to DOMNodes and event handlers are bound with vanilla JS or jQuery. Nimbly components undergo minimal transformations and do not require build steps -- the code you write is what ends up in the browser.
+* **No DSLs** - Write code with plain HTML, CSS and JavaScript. You don't need to learn another domain specific language (e.g., JSX).
+* **Easier to debug** - fewer abstractions, no DSLs and ES5 support without transpiling means that Nimbly components are relatively easy to debug. Errors generally result in much shorter stack traces than other major JS frameworks.
+* **"Plays nice"** - Nimbly is entirely self-contained and does not take over the page. Nimbly is perfectly happy existing alongside other non-Nimbly components.
 
 ## Requirements
 
 Nimbly requires the following libraries:
 
 * **[jQuery 1.9.0+](https://github.com/jquery/jquery)**
-* **[Mustache.js 2.0.0+](https://github.com/janl/mustache.js)**
 * **[ObservableSlim 0.1.3+](https://github.com/ElliotNB/observable-slim)**
 
 ## Install
@@ -59,7 +58,6 @@ Nimbly requires the following libraries:
 ```html
 <script src="observable-slim.min.js"></script>
 <script src="jquery.min.js"></script>
-<script src="mustache.min.js"></script>
 <script src="nimbly.min.js"></script>
 ```
 
@@ -204,9 +202,9 @@ The full list of component settings is as follows:
 
 1. **`tagName`** - String, required, if this component is registered as a child of another component, then the `tagName` defines what custom tag in the template will include this component (e.g., `tagName:"hello-world" == <hello-world></hello-world>`).
 
-2. **`templates`** - Object, required, a set of name value pairs -- the name being the template name and the value being a string (or template litereal) containing the Mustache template. 
+2. **`templates`** - Object, required, a set of name value pairs -- the name being the template name and the value being a string (or template litereal) containing the template (typically a Mustache template). 
 
-	For ES5 support (e.g., IE11, no support for template literals) , `templates` may also be an Array of element IDs pointing to `<script>` tags on the document whose innerHTML contains the Mustache template.
+	For ES5 support (e.g., IE11, no support for template literals) , `templates` may also be an Array of element IDs pointing to `<script>` tags on the document whose innerHTML contains the template.
 
 	Example:
 	

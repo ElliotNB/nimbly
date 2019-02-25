@@ -21,7 +21,9 @@
     "jsdom": "11.7.0",
     "nyc": "11.8.0",
     "util": "0.10.3",
-    "xmlhttprequest": "1.8.0"
+    "xmlhttprequest": "1.8.0",
+    "natives": "1.1.6",
+    "mustache": "3.0.0"
   },
   "babel": {
     "presets": [
@@ -43,8 +45,7 @@
     "url": "https://github.com/ElliotNB/nimbly/issues"
   },
   "dependencies": {
-    "observable-slim": "0.1.5",
     "jquery": "3.3.1",
-    "mustache": "3.0.0"
+    "observable-slim": "0.1.5"
   }
 }
