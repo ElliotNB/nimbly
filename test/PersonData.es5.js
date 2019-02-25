@@ -29,6 +29,10 @@ var PersonData = function($,Mustache,Nimbly) {
 	constructor.prototype = Object.create(Nimbly.prototype);
 	constructor.prototype.constructor = constructor;
 	
+	constructor.prototype._render = function() {
+		return $(Mustache.render(this.templates["t4m_template_2"], this.data));
+	}
+	
 	constructor.prototype._fetchDummyData = function(resolve, reject) {
 		var self = this;
 		setTimeout(function() {

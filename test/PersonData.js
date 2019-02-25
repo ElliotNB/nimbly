@@ -38,6 +38,10 @@ var PersonData = function($,Mustache,Nimbly) {
 			super("PersonData", defaults, data || {}, options || {});
 		};
 		
+		_render() {
+			return $(Mustache.render(this.templates["t4m_template_2"], this.data));
+		}
+		
 		_renderLoading() {
 			return $("<div>Testing _renderLoading</div>");
 		}
