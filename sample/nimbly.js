@@ -1,12 +1,12 @@
 /*
  * 	Nimbly
- *	Version 0.0.8
+ *	Version 0.0.9
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
  * 	http://www.opensource.org/licenses/MIT
  *
- *	Nimbly is a JavaScript component framework for single page applications.
+ *	Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
  *
  */
 var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
