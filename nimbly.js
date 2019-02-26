@@ -748,6 +748,8 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 		if (jqDom.length !== 1) {
 			throw new Error(this.className +".render() cannot continue. The loadingTemplate or _renderLoading method has returned an object with "+jqDom.length+" top-level elements. There must be one top-level element that encapsulates the loading display.");
 		}
+		
+		return jqDom;
 	
 	};
 

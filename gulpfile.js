@@ -25,8 +25,8 @@ gulp.task('pre-test', function () {
 	.pipe(istanbul.hookRequire());
 });
 
-gulp.task('test', ['pre-test'], function() {
-	return gulp.src(['test/suite/test.js'])
+gulp.task('test', gulp.series("pre-test", function() {
+	return gulp.src('test/suite/test.js')
 	.pipe(mocha({compilers:babel, exit: true}))
 	.once('error', err => {
 		process.exit(1);
@@ -35,4 +35,4 @@ gulp.task('test', ['pre-test'], function() {
 	.once('end', () => {
 		process.exit();
 	})
-});
+}));
