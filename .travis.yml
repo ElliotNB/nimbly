@@ -1,10 +1,9 @@
 language: node_js
 node_js:
-  - "8"
+  - "10"
 before_script:
   - npm install
 script: 
-  - gulp test
   - npm run coveralls
 notifications:
   slack: transformativemed:0JUkhBnKaiZ1vARU9rDe9S4o

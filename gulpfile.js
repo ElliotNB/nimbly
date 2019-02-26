@@ -17,22 +17,12 @@ gulp.task('default', function(){
 	.pipe(gulp.dest('./'))
 });
 
-gulp.task('pre-test', function () {
-	return gulp.src(['nimbly.js'])
-	// Covering files
-	.pipe(istanbul())
-	// Force `require` to return covered files
-	.pipe(istanbul.hookRequire());
-});
-
-gulp.task('test', gulp.series("pre-test", function() {
-	return gulp.src('test/suite/test.js')
+gulp.task('test', function(done) {
+	gulp.src(['test/suite/test.js'])
 	.pipe(mocha({compilers:babel, exit: true}))
 	.once('error', err => {
 		process.exit(1);
+		done();
 	})
-	.pipe(istanbul.writeReports())
-	.once('end', () => {
-		process.exit();
-	})
-}));
+	done();
+});
