@@ -113,6 +113,9 @@ describe('HelloWorld component test suite.', function() {
 	var PersonData = require("../PersonData.js")($,Mustache,Nimbly);
 	var ListItemComp = require("../ListItemComp.js")($,Mustache,Nimbly,GrandChildComp);
 	var BadComponent = require("../BadComponent.js")($,Mustache,Nimbly);
+	var AnotherBadComponent = require("../AnotherBadComponent.js")($,Mustache,Nimbly);
+	var EmptyLoadingTpl = require("../EmptyLoadingTpl.js")($,Mustache,Nimbly);
+	var NonExistBindingMethod = require("../NonExistBindingMethod.js")($,Mustache,Nimbly);
 	var HelloWorld = require("../HelloWorld.js")($,Mustache,Nimbly,PersonData,ListItemComp);
 	var helloWorld = new HelloWorld();
 	$("body").append(helloWorld.render());
@@ -264,7 +267,7 @@ describe('HelloWorld component test suite.', function() {
 			badComponent.render();
 		}).to.throw();
 	});
-
+	
 	it('Data change triggers fetch method whose response triggers a data change and a refresh.', async() => {
 		var personComp = new PersonData();
 		await whenReady(personComp);
@@ -272,5 +275,33 @@ describe('HelloWorld component test suite.', function() {
 		await whenReady(personComp);
 		expect(personComp.data.chained_update).to.equal(true);
 	});
+	
+	it('Registering an non-Nimbly component as child should throw an error.', () => {
+		var notAComponent = {};
+		expect(function() {
+			helloWorld.registerChild(notAComponent);
+		}).to.throw();
+	});
+	
+	it('Modifying this.data while rendering should throw an error.', () => {
+		var anotherBadComponent = new AnotherBadComponent();
+		expect(function() {
+			anotherBadComponent.render();
+		}).to.throw();
+	});
+	
+	it('A component with an empty string for a loading template should throw an error.', () => {
+		expect(function() {
+			var emptyLoadingTpl = new EmptyLoadingTpl();
+		}).to.throw();
+	});
+	
+	it('A component with an non-existent method defined in a data binding should throw an error.', () => {
+		expect(function() {
+			var nonExist = new NonExistBindingMethod();
+		}).to.throw();
+	});
+	
+	
 
 });
