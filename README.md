@@ -64,7 +64,7 @@ Nimbly requires the following libraries:
 Also available via NPM:
 
 ```
-$ npm install nimbly
+$ npm install nimbly --save
 ```
 
 ## Parameters

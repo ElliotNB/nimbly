@@ -5,7 +5,6 @@ var fs = require('fs');
 var Mustache = require('mustache');
 var ObservableSlim = require('observable-slim');
 var XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
-//var MutationObserver = function() { return {"observe":function() {return null}}; };
 var MutationObserver = require('./mock-mutation-observer.js');
 
 // the Promise returned by this function will resolve when the component is not initliaziing,
