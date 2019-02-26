@@ -622,17 +622,7 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 		// if the initialization is in progress, then render the 'loading' display
 		if (this.initialized == false && this._pendingInit == true) {
 
-			// if the component has defined a loading render method, then we use that first
-			if (typeof this._renderLoading === "function") {
-				var jqDom = this._renderLoading();
-			} else {
-				var jqDom = $(this.loadingTemplate);
-			}
-			
-			// throw an error if the rendered loading display does not contain 1 top-level element.
-			if (jqDom.length !== 1) {
-				throw new Error(this.className +".render() cannot continue. The loadingTemplate or _renderLoading method has returned an object with "+jqDom.length+" top-level elements. There must be one top-level element that encapsulates the loading display.");
-			}
+			var jqDom = this._renderLoadingFromComp();
 
 		// else the component is initialized and ready for the standard render
 		} else {
@@ -697,17 +687,7 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 		// if the initialization is in progress, then render the 'loading' display
 		if (this.initialized == false && this._pendingInit == true) {
 
-			// if the component has defined a loading render method, then we use that first
-			if (typeof this._renderLoading === "function") {
-				var jqDom = this._renderLoading();
-			} else {
-				var jqDom = $(this.loadingTemplate);
-			}
-			
-			// throw an error if the rendered loading display does not contain 1 top-level element.
-			if (jqDom.length !== 1) {
-				throw new Error(this.className +".render() cannot continue. The loadingTemplate or _renderLoading method has returned an object with "+jqDom.length+" top-level elements. There must be one top-level element that encapsulates the loading display.");
-			}
+			var jqDom = this._renderLoadingFromComp();
 
 		// else the component is initialized and ready for the standard render
 		} else {
@@ -753,6 +733,22 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 		
 		return jqDom;
 		
+	};
+	
+	constructor.prototype._renderLoadingFromComp = function() {
+		
+		// if the component has defined a loading render method, then we use that first
+		if (typeof this._renderLoading === "function") {
+			var jqDom = this._renderLoading();
+		} else {
+			var jqDom = $(this.loadingTemplate);
+		}
+		
+		// throw an error if the rendered loading display does not contain 1 top-level element.
+		if (jqDom.length !== 1) {
+			throw new Error(this.className +".render() cannot continue. The loadingTemplate or _renderLoading method has returned an object with "+jqDom.length+" top-level elements. There must be one top-level element that encapsulates the loading display.");
+		}
+	
 	};
 
 	/*	Method: this._render()

@@ -643,21 +643,8 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 
 			// else the component does have pending changes or has not been fully rendered yet -- so we must invoke the normal .render() method.
 			} else {
-				this._renderRunning = true;
-				var jqDom = this._render();
-				this._renderRunning = false;
-
-				// verify that the component ._render method correctly returned a jQuery-referenced HTMLElement
-				if (!(jqDom.length > 0 && jqDom instanceof $ && jqDom[0] instanceof HTMLElement)) {
-					throw new Error(this.className + ".render() cannot continue. Component ._render() method must return a jQuery-referenced DOM element. Example: $('<div>hello world</div>');");
-				}
 				
-				// verify that the component template has a single parent element that wraps the entire component. we need a single element to encapsulate the component
-				// for later portions of the framework that will search for child components with .find and .replaceWith -- those commands break down if multiple elements 
-				// are returned by the ._render method
-				if (jqDom.length > 1) {
-					throw new Error(this.className + ".render() cannot continue. "+this.className+"._render() must return a single jQuery-referenced DOM element -- instead it returned "+jqDom.length+" elements. Ensure that your component template is wrapped (encapsulated) by a single element.");
-				}
+				var jqDom = this._renderFromComp();
 
 				// insert (if any) child components that have been registered to this component
 				var insertedChildren = this._insertChildren(jqDom);
@@ -725,21 +712,7 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 		// else the component is initialized and ready for the standard render
 		} else {
 
-			this._renderRunning = true;
-			var jqDom = this._render();
-			this._renderRunning = false;
-
-			// verify that the component ._render method correctly returned a jQuery-referenced HTMLElement
-			if (!(jqDom.length > 0 && jqDom instanceof $ && jqDom[0] instanceof HTMLElement)) {
-				throw new Error(this.className + "._renderWithChildren() cannot continue. Component ._render() method must return a jQuery-referenced DOM element. Example: $('<div>hello world</div>');");
-			}
-			
-			// verify that the component template has a single parent element that wraps the entire component. we need a single element to encapsulate the component
-			// for later portions of the framework that will search for child components with .find and .replaceWith -- those commands break down if multiple elements 
-			// are returned by the ._render method
-			if (jqDom.length > 1) {
-				throw new Error(this.className + "._renderWithChildren() cannot continue. "+this.className+"._render() must return a single jQuery-referenced DOM element -- instead it returned "+jqDom.length+" elements. Ensure that your component template is wrapped (encapsulated) by a single element.");
-			}
+			var jqDom = this._renderFromComp();
 
 			// insert (if any) child components that have been registered to this component
 			var insertedChildren = this._insertChildren(jqDom);
@@ -759,6 +732,28 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 		};
 
 	};
+	
+	constructor.prototype._renderFromComp = function() {
+		
+		this._renderRunning = true;
+		var jqDom = this._render();
+		this._renderRunning = false;
+
+		// verify that the component ._render method correctly returned a jQuery-referenced HTMLElement
+		if (!(jqDom.length > 0 && jqDom instanceof $ && jqDom[0] instanceof HTMLElement)) {
+			throw new Error(this.className + ".render() cannot continue. Component ._render() method must return a jQuery-referenced DOM element. Example: $('<div>hello world</div>');");
+		}
+		
+		// verify that the component template has a single parent element that wraps the entire component. we need a single element to encapsulate the component
+		// for later portions of the framework that will search for child components with .find and .replaceWith -- those commands break down if multiple elements 
+		// are returned by the ._render method
+		if (jqDom.length > 1) {
+			throw new Error(this.className + ".render() cannot continue. "+this.className+"._render() must return a single jQuery-referenced DOM element -- instead it returned "+jqDom.length+" elements. Ensure that your component template is wrapped (encapsulated) by a single element.");
+		}
+		
+		return jqDom;
+		
+	};
 
 	/*	Method: this._render()
 			This render method on the base class should be over-written by the child class. This is where the
@@ -777,10 +772,8 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 		// If the child class has not overwritten this method, then we just assume that it's a component
 		// with one static HTML template
 
-		// grab the first template
-		for (var tplName in this.templates) break;
-
-		var jqDom = $(this.templates[tplName]);
+		// use Object.keys to grab the first template
+		var jqDom = $(this.templates[Object.keys(this.templates)[0]]);
 		return jqDom;
 	};
 
