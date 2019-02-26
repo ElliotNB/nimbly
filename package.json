@@ -22,7 +22,8 @@
     "util": "0.10.3",
     "xmlhttprequest": "1.8.0",
     "mustache": "3.0.0",
-    "mocha": "6.0.2"
+    "mocha": "6.0.2",
+    "istanbul": "0.4.5"
   },
   "babel": {
     "presets": [
