@@ -4,7 +4,6 @@ var useref = require('gulp-useref');
 var rename = require('gulp-rename');
 var mocha = require('gulp-mocha');
 var babel = require('gulp-babel');
-var istanbul = require('gulp-istanbul');
 
 gulp.task('default', function(){
   return gulp.src(['nimbly.js'])
