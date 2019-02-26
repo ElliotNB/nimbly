@@ -116,6 +116,8 @@ describe('HelloWorld component test suite.', function() {
 	var AnotherBadComponent = require("../AnotherBadComponent.js")($,Mustache,Nimbly);
 	var EmptyLoadingTpl = require("../EmptyLoadingTpl.js")($,Mustache,Nimbly);
 	var NonExistBindingMethod = require("../NonExistBindingMethod.js")($,Mustache,Nimbly);
+	var BadLoadingTpl = require("../BadLoadingTpl.js")($,Mustache,Nimbly);
+	var NoTemplates = require("../NoTemplates.js")($,Mustache,Nimbly);
 	var HelloWorld = require("../HelloWorld.js")($,Mustache,Nimbly,PersonData,ListItemComp);
 	var helloWorld = new HelloWorld();
 	$("body").append(helloWorld.render());
@@ -299,6 +301,21 @@ describe('HelloWorld component test suite.', function() {
 	it('A component with an non-existent method defined in a data binding should throw an error.', () => {
 		expect(function() {
 			var nonExist = new NonExistBindingMethod();
+		}).to.throw();
+	});
+	
+	it('Attempting to retrieve a non-existent <script> template should throw an error.', () => {
+		
+		expect(function() {
+			var badLoadingTpl = new BadLoadingTpl();
+			badLoadingTpl.render();
+		}).to.throw();
+	});
+	
+	it('A component without any defined templates should throw an error.', () => {
+		
+		expect(function() {
+			var noTemplates = new NoTemplates();
 		}).to.throw();
 	});
 	
