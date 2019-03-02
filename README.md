@@ -51,7 +51,22 @@ The objectives of Nimbly are as follows:
 Nimbly requires the following libraries:
 
 * **[jQuery 1.9.0+](https://github.com/jquery/jquery)**
-* **[ObservableSlim 0.1.3+](https://github.com/ElliotNB/observable-slim)**
+* **[ObservableSlim 0.1.5+](https://github.com/ElliotNB/observable-slim)**
+
+### Why jQuery?
+
+Nimbly originally started out as a project to facilitate easier and faster refactors of jQuery-heavy web apps. 
+
+For the time being, Nimbly requires jQuery. But fret not, components built with Nimbly *are not* required to use jQuery. 
+
+Nimbly uses jQuery for:
+- Merging deeply nested objects via `$.extend`.
+- Ease of updating DOM nodes via `$.replaceWith`.
+- Creation of new DOM elements `$("<div>...</div>");`
+
+Eventually, this functionality will be bundled directly into Nimbly and jQuery will be retired.
+
+Including jQuery v3.3.1 minified slim adds 69KB to the total footprint of the framework.
 
 ## Install
 

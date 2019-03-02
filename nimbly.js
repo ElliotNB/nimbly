@@ -713,6 +713,14 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 
 	};
 	
+	/*	Function this._renderFromComp
+			This is a simple wrapper function for invoking the _render method on child components and determining if the rendered component
+			returned is valid (i.e., a plain HTMLElement or jQuery-referenced DOM element.
+			
+		Returns:
+			jQuery-referenced DOM element
+	
+	*/
 	constructor.prototype._renderFromComp = function() {
 		
 		this._renderRunning = true;
