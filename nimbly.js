@@ -684,8 +684,15 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 
 		this.jqDom = jqDom;
 		this.domNode = jqDom[0];
-
-		return jqDom;
+		
+		// By default, the render method should return a native DOM Node. But if this._renderjQuery is set to true, then the component 
+		// is using jQuery for their rendering processes and we want to return a DOMNode referenced by jQuery.
+		if (this._renderjQuery === false) {
+			return this.domNode;
+		} else {
+			return this.jqDom;
+		}
+		
 	};
 
 	constructor.prototype._renderWithChildren = function() {

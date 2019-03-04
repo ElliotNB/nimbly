@@ -42,7 +42,7 @@ The objectives of Nimbly are as follows:
 **What makes Nimbly different?**
 
 * **Fewer abstractions** - Nimbly embraces the native DOM. It does not require the use of a virtual DOM abstraction. Nimbly components render plain HTMLElements.
-* **No build steps** - The code you write is what ends up in the browser. No mandatory transpiling and no required build process.
+* **No build steps** - The code you write is what ends up in the browser. No mandatory transpiling nor build process.
 * **No DSLs** - Write code with plain HTML, CSS and JavaScript. You don't need to learn another domain specific language (e.g., JSX).
 * **Easy to debug** - fewer abstractions, no DSLs and ES5 support without transpiling means that Nimbly components are easy to debug. Short stack traces and a minimum of framework-specific error sleuthing.
 * **"Plays nice"** - Nimbly is self-contained and does not take over the page. Nimbly is perfectly happy existing alongside other non-Nimbly components.
@@ -56,7 +56,7 @@ Nimbly requires the following libraries:
 
 ### Why jQuery?
 
-Nimbly originally started out as a project to facilitate easier and faster refactors of jQuery-heavy web apps. 
+Nimbly started out as a project to facilitate easier refactors of jQuery-heavy web apps. 
 
 For the time being, Nimbly requires jQuery. But fret not, components built with Nimbly *are not* required to use jQuery. 
 
