@@ -13,6 +13,7 @@ var GrandChildComp = function($,Mustache,Nimbly) {
 		,"dataBindings":{}
 		,"data":{}
 		,"delayInit":false
+		,"renderjQuery":true
 	};
 
 	class componentClass extends Nimbly {

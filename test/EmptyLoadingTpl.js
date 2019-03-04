@@ -26,6 +26,7 @@ var EmptyLoadingTpl = function($,Mustache,Nimbly) {
 			,"chained_request":null
 		}
 		,"delayInit":false
+		,"renderjQuery":true
 	};
 	
 	class componentClass extends Nimbly {

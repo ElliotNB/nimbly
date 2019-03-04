@@ -123,7 +123,7 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 				self.registerChild([listItem], "repeat-list");
 			});
 
-			return jqDom;
+			return jqDom[0];
 
 		};
 		

@@ -20,6 +20,7 @@ var BadComponent = function($,Mustache,Nimbly) {
 			,"chained_request":null
 		}
 		,"delayInit":false
+		,"renderjQuery":true
 	};
 
 	var constructor = function(data, options) {

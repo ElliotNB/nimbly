@@ -16,6 +16,7 @@ var ListItemComp = function($,Mustache,Nimbly,GrandChildComp) {
 		,"data":{
 		}
 		,"delayInit":false
+		,"renderjQuery":true
 	};
 
 	class componentClass extends Nimbly {

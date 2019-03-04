@@ -20,6 +20,7 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData) {
 			,"dummy_field":"foobar"
 		}
 		,"delayInit":false
+		,"renderjQuery":true
 	};
 
 	var constructor = function(data, options) {

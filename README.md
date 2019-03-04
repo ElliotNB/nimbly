@@ -41,10 +41,11 @@ The objectives of Nimbly are as follows:
 
 **What makes Nimbly different?**
 
-* **Fewer abstractions** - Nimbly doesn't abstract away from the DOM, Nimbly embraces the DOM. Components render to DOMNodes and event handlers are bound with vanilla JS or jQuery. Nimbly components undergo minimal transformations and do not require build steps -- the code you write is what ends up in the browser.
+* **Fewer abstractions** - Nimbly embraces the native DOM. It does not require the use of a virtual DOM abstraction. Nimbly components render plain HTMLElements.
+* **No build steps** - The code you write is what ends up in the browser. No mandatory transpiling and no required build process.
 * **No DSLs** - Write code with plain HTML, CSS and JavaScript. You don't need to learn another domain specific language (e.g., JSX).
-* **Easier to debug** - fewer abstractions, no DSLs and ES5 support without transpiling means that Nimbly components are relatively easy to debug. Errors generally result in much shorter stack traces than other major JS frameworks.
-* **"Plays nice"** - Nimbly is entirely self-contained and does not take over the page. Nimbly is perfectly happy existing alongside other non-Nimbly components.
+* **Easy to debug** - fewer abstractions, no DSLs and ES5 support without transpiling means that Nimbly components are easy to debug. Short stack traces and a minimum of framework-specific error sleuthing.
+* **"Plays nice"** - Nimbly is self-contained and does not take over the page. Nimbly is perfectly happy existing alongside other non-Nimbly components.
 
 ## Requirements
 
@@ -59,10 +60,10 @@ Nimbly originally started out as a project to facilitate easier and faster refac
 
 For the time being, Nimbly requires jQuery. But fret not, components built with Nimbly *are not* required to use jQuery. 
 
-Nimbly uses jQuery for:
+Nimbly uses jQuery primarily for:
 - Merging deeply nested objects via `$.extend`.
-- Ease of updating DOM nodes via `$.replaceWith`.
-- Creation of new DOM elements `$("<div>...</div>");`
+- Updating DOM nodes via `$.replaceWith`.
+- Creation of new DOM elements `$("<div>hello world</div>");`
 
 Eventually, this functionality will be bundled directly into Nimbly and jQuery will be retired.
 
@@ -103,17 +104,19 @@ All Nimbly components have the following public properties:
 
 2. **`className`** - String, the name of the class that initialized the base class. We store this value for debugging and logging purposes.
 
-3. **`jqDom`** - jQuery-referenced DOM Node rendered by this component.
+3. **`domNode`** - the DOM Node rendered by this component.
 
-4. **`initialized`** - Boolean, set to true when the this.init() method has completed and the component is ready to render.
+4. **`jqDom`** - jQuery reference to `this.domNode`.
 
-5. **`childComponents`** - Hash, if a component registers (via `.registerChild`) other components, then those child components will be added to the hash. Child components are indexed on the hash according to what list or repeatable section they belong to. If a component is not part of a list, then that component is added to `this.childComponents.default`.
+5. **`initialized`** - Boolean, set to true when the this.init() method has completed and the component is ready to render.
 
-6. **`templates`** - Hash, where the key is the name of the template and the value is a string containing the template. The hash contains each template used by the component. The template element identifiers are passed in via options.templates and below we will populate this.templates with the content of the template.
+6. **`childComponents`** - Hash, if a component registers (via `.registerChild`) other components, then those child components will be added to the hash. Child components are indexed on the hash according to what list or repeatable section they belong to. If a component is not part of a list, then that component is added to `this.childComponents.default`.
 
-7. **`loadingTemplate`** - String, template content OR an element identifier of the template used to display a loading spinner or loading message. The loadingTemplate is utilized only if the .render() method is invoked before the component has been initialized. It allows the component to return a rendered DomNode that will be subsequently updated as soon as initialization completes.
+7. **`templates`** - Hash, where the key is the name of the template and the value is a string containing the template. The hash contains each template used by the component. The template element identifiers are passed in via options.templates and below we will populate this.templates with the content of the template.
 
-8. **`data`** - ES6 Proxy, serves as a proxy to the component state data (this._data) and enables the component to observe any changes that occur to the data. All modifications to component data should be made through this property.
+8. **`loadingTemplate`** - String, template content OR an element identifier of the template used to display a loading spinner or loading message. The loadingTemplate is utilized only if the .render() method is invoked before the component has been initialized. It allows the component to return a rendered DomNode that will be subsequently updated as soon as initialization completes.
+
+9. **`data`** - ES6 Proxy, serves as a proxy to the component state data (this._data) and enables the component to observe any changes that occur to the data. All modifications to component data should be made through this property.
 
 ## Base Class Methods
 
@@ -309,6 +312,8 @@ The full list of component settings is as follows:
 	```
 
 8. **`delayInit`** - Boolean, optional, defaults to true. If true, then we do not fire off the _fetch* methods defined in the initList automatically when the component is initialized -- we would have do it manually at a later time using the this.init() method.
+
+9. **`renderjQuery`** - Boolean, optional, defaults to false. Only set this to true if your component's `._render` method and `._renderLoading` methods return a jQuery-referenced HTMLElement (i.e., `return $("<div>Hello world</div>");`).
 	
 ## Usage
 
