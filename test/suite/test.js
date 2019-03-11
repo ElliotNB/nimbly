@@ -37,11 +37,11 @@ describe('HelloWorld ES5 component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,Object, window.document);
+	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,Object,window.DOMParser, window.document);
 	
 	var PersonData = require("../PersonData.es5.js")($,Mustache,Nimbly);
-	var HelloWorld = require("../HelloWorld.es5.js")($,Mustache,Nimbly,PersonData);
-	var helloWorld = new HelloWorld();
+	var HelloWorldES5 = require("../HelloWorld.es5.js")($,Mustache,Nimbly,PersonData);
+	var helloWorld = new HelloWorldES5();
 	helloWorld.render();
 	
 	var observedChanges = false;
@@ -108,7 +108,7 @@ describe('HelloWorld component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,Object, window.document);
+	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,Object, window.DOMParser, window.document);
 	var GrandChildComp = require("../GrandChildComp.js")($,Mustache,Nimbly);
 	var PersonData = require("../PersonData.js")($,Mustache,Nimbly);
 	var ListItemComp = require("../ListItemComp.js")($,Mustache,Nimbly,GrandChildComp);
@@ -118,7 +118,7 @@ describe('HelloWorld component test suite.', function() {
 	var NonExistBindingMethod = require("../NonExistBindingMethod.js")($,Mustache,Nimbly);
 	var BadLoadingTpl = require("../BadLoadingTpl.js")($,Mustache,Nimbly);
 	var NoTemplates = require("../NoTemplates.js")($,Mustache,Nimbly);
-	var HelloWorld = require("../HelloWorld.js")($,Mustache,Nimbly,PersonData,ListItemComp);
+	var HelloWorld = require("../HelloWorld.js")(Mustache,Nimbly,PersonData,ListItemComp);
 	var RegChildInRender = require("../RegChildInRender.js")($,Mustache,Nimbly,PersonData,ListItemComp);
 	var helloWorld = new HelloWorld();
 	$("body").append(helloWorld.render());
@@ -163,9 +163,13 @@ describe('HelloWorld component test suite.', function() {
 
 	it('Set a new user name.', async () => {
 		var jqUserNameTextBox = helloWorld.jqDom.find(".user_name_text");
-		jqUserNameTextBox.val("Elliot").keyup();
+		jqUserNameTextBox.val("Elliot");
+		
+		let keyupEvent = new window.Event('keyup');
+		jqUserNameTextBox[0].dispatchEvent(keyupEvent);
+		
 
-		await helloWorld.isReady();
+		await whenReady(helloWorld);
 
 		expect(helloWorld._data.user_name).to.equal("Elliot");
 		expect(jqUserNameTextBox.val()).to.equal("Elliot");
@@ -227,7 +231,8 @@ describe('HelloWorld component test suite.', function() {
 
 	it('Event handlers in repeatable sections still work after a refresh of that section.', async () => {
 		// click the 'add item' button to add another list item
-		helloWorld.jqDom.find(".add_list_item").click();
+		let clickEvent = new window.Event("click");
+		helloWorld.jqDom.find(".add_list_item")[0].dispatchEvent(clickEvent);
 
 		await whenReady(helloWorld);
 
@@ -236,7 +241,11 @@ describe('HelloWorld component test suite.', function() {
 		// there should now be 5 items in the list
 		expect(listItemCount).to.equal(5);
 
-		$(helloWorld.jqDom.find(".list-item-test")[0]).click();
+		clickEvent = new window.Event("click");
+		
+		helloWorld.jqDom.find(".list-item-test")[0].dispatchEvent(clickEvent);
+		
+		await whenReady(helloWorld);
 
 		expect(helloWorld.data.dummy_field_2).to.equal("foobar test");
 

@@ -9,7 +9,7 @@
  *	Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
  *
  */
-var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
+var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParser, document) {
 
 	if (typeof $ === "undefined") throw new Error("Nimbly requires jQuery 1.9+.");
 	if (typeof ObservableSlim === "undefined") throw new Error("Nimbly requires ObservableSlim 0.1.0+.");
@@ -801,6 +801,11 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 		var jqDom = $(this.templates[Object.keys(this.templates)[0]]);
 		return jqDom;
 	};
+	
+	var parser = new DOMParser();
+	constructor.prototype._parseHTML = function(strHTML) {
+		return parser.parseFromString(strHTML, "text/html").body.firstChild;
+	};
 
 
 	/*	Method: this._insertChildren
@@ -1268,9 +1273,9 @@ var Nimbly = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
 };
 
 if (typeof module === "undefined") {
-	window["Nimbly"] = Nimbly($,ObservableSlim,MutationObserver,HTMLElement, document);
+	window["Nimbly"] = Nimbly($, ObservableSlim, MutationObserver, HTMLElement, DOMParser, document);
 } else {
-	module.exports = function($,ObservableSlim,MutationObserver,HTMLElement, document) {
-		return Nimbly($,ObservableSlim,MutationObserver,HTMLElement, document);
+	module.exports = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParser, document) {
+		return Nimbly($, ObservableSlim, MutationObserver, HTMLElement, DOMParser, document);
 	};
 }

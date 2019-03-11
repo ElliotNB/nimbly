@@ -1,4 +1,4 @@
-var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
+var HelloWorld = function(Mustache,Nimbly,PersonData,ListItemComp) {
 
 	const defaults = {
 		"tagName":"hello-world"
@@ -102,28 +102,39 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 				,"admit_date":this.data.admit_date
 				,"person_id":this.data.person_id
 			};
+			
+			var tpl = Mustache.render(this.templates["t4m_template_1"], tplData);
+			var dom = this._parseHTML(tpl);
 
-			var jqDom = $(Mustache.render(this.templates["t4m_template_1"], tplData));
+			if (dom.getElementsByClassName("user_name_text").length > 0) {
+				debugger;
+				dom.getElementsByClassName("user_name_text")[0].addEventListener("keyup", function() {
+					debugger;
+					self.data.user_name = this.value.trim();
+				});
+			}
 
-			jqDom.find(".user_name_text").on("keyup", function() {
-				self.data.user_name = $.trim($(this).val());
-			});
+			if (dom.getElementsByClassName("patient_name_change_btn").length > 0) {
+				dom.getElementsByClassName("patient_name_change_btn")[0].addEventListener("click", function() {
+					self.data.patient_name = "Bobby Smith";
+				});
+			}
 
-			jqDom.find(".patient_name_change_btn").on("click", function() {
-				self.data.patient_name = "Bobby Smith";
-			});
+			if (dom.getElementsByClassName("load_next_patient_btn").length > 0) {
+				dom.getElementsByClassName("load_next_patient_btn")[0].addEventListener("click", function() {
+					self.data.person_id = 5555555;
+				});
+			}
 
-			jqDom.find(".load_next_patient_btn").on("click", function() {
-				self.data.person_id = 5555555;
-			});
+			if (dom.getElementsByClassName("add_list_item").length > 0) {
+				dom.getElementsByClassName("add_list_item")[0].addEventListener("click", function() {
+					self.data.list_item_count = self.data.list_item_count + 1;
+					var listItem = new ListItemComp(self.data,null);
+					self.registerChild([listItem], "repeat-list");
+				});
+			}
 
-			jqDom.find(".add_list_item").on("click", function() {
-				self.data.list_item_count = self.data.list_item_count + 1;
-				var listItem = new ListItemComp(self.data,null);
-				self.registerChild([listItem], "repeat-list");
-			});
-
-			return jqDom[0];
+			return dom;
 
 		};
 		
@@ -163,9 +174,9 @@ var HelloWorld = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 };
 
 if (typeof module === "undefined") {
-	window["HelloWorld"] = HelloWorld($,Mustache,Nimbly,PersonData,ListItemComp);
+	window["HelloWorld"] = HelloWorld(Mustache,Nimbly,PersonData,ListItemComp);
 } else {
-	module.exports = function($,Mustache,Nimbly,PersonData,ListItemComp) {
-		return HelloWorld($,Mustache,Nimbly,PersonData,ListItemComp);
+	module.exports = function(Mustache,Nimbly,PersonData,ListItemComp) {
+		return HelloWorld(Mustache,Nimbly,PersonData,ListItemComp);
 	};
 }
