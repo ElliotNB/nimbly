@@ -119,6 +119,7 @@ describe('HelloWorld component test suite.', function() {
 	var BadLoadingTpl = require("../BadLoadingTpl.js")($,Mustache,Nimbly);
 	var NoTemplates = require("../NoTemplates.js")($,Mustache,Nimbly);
 	var HelloWorld = require("../HelloWorld.js")($,Mustache,Nimbly,PersonData,ListItemComp);
+	var RegChildInRender = require("../RegChildInRender.js")($,Mustache,Nimbly,PersonData,ListItemComp);
 	var helloWorld = new HelloWorld();
 	$("body").append(helloWorld.render());
 
@@ -244,9 +245,27 @@ describe('HelloWorld component test suite.', function() {
 	it('Trigger a manual refresh.', async() => {
 
 		helloWorld.refresh();
-		whenReady(helloWorld);
+		await whenReady(helloWorld);
 		expect(helloWorld.jqDom.find(".hello_user_container").length).to.equal(1);
 
+	});
+	
+	it.skip('Components that register children via _render should not grow in number after successive refreshes.', async() => {
+		
+		var regChildInRender = new RegChildInRender();
+		await whenReady(regChildInRender);
+		var jqDom = regChildInRender.render();
+		
+		expect(regChildInRender.jqDom.find(".list-item-test").length).to.equal(4);
+		
+		regChildInRender.refresh();
+		
+		await whenReady(regChildInRender);
+		
+		expect(regChildInRender.jqDom.find(".list-item-test").length).to.equal(4);
+		
+		
+		
 	});
 	
 	it('Destroy a component.', (done) => {
@@ -263,7 +282,7 @@ describe('HelloWorld component test suite.', function() {
 
 	});
 
-	it('Improper object returned by _render method should throw an error.', () => {
+ 	it('Improper object returned by _render method should throw an error.', () => {
 		var badComponent = new BadComponent();
 		expect(function() {
 			badComponent.render();
