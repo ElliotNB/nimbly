@@ -273,6 +273,13 @@ describe('HelloWorld component test suite.', function() {
 		
 		expect(regChildInRender.jqDom.find(".list-item-test").length).to.equal(4);
 		
+		// modifying list_item_count triggers a refresh
+		regChildInRender.data.list_item_count = 5;
+		
+		await whenReady(regChildInRender);
+		
+		expect(regChildInRender.jqDom.find(".list-item-test").length).to.equal(5);
+		
 		
 		
 	});

@@ -30,7 +30,7 @@ var GrandChildComp = function($,Mustache,Nimbly) {
 		_dummyInitWait(resolve, reject) {
 			setTimeout(function() {
 				resolve();
-			}, 2000);
+			}, 500);
 		}
 		
 		_afterInDocument() {
