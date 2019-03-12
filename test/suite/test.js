@@ -259,7 +259,7 @@ describe('HelloWorld component test suite.', function() {
 
 	});
 	
-	it.skip('Components that register children via _render should not grow in number after successive refreshes.', async() => {
+	it('Components that register children via _render should not grow in number after successive refreshes.', async() => {
 		
 		var regChildInRender = new RegChildInRender();
 		await whenReady(regChildInRender);

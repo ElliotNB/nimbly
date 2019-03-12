@@ -107,9 +107,8 @@ var HelloWorld = function(Mustache,Nimbly,PersonData,ListItemComp) {
 			var dom = this._parseHTML(tpl);
 
 			if (dom.getElementsByClassName("user_name_text").length > 0) {
-				debugger;
+				
 				dom.getElementsByClassName("user_name_text")[0].addEventListener("keyup", function() {
-					debugger;
 					self.data.user_name = this.value.trim();
 				});
 			}

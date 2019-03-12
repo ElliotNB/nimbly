@@ -185,6 +185,19 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 		*/
 		this._renderRunning = false;
 		
+		/*	Property: this._registeredDuringRender
+				Boolean, set to false by default, set to true only if this component is registered as a child component to another parent component AND it was
+				registered as a child during render process (i.e., _render method) of that parent component. See issue #26 for a full explanation.
+		*/
+		this._registeredDuringRender = false;
+		
+		/*	Property: this._insertedIntoParent
+				Boolean, if this component has been registered as a child and was registered during the render process of its parent (i.e., this._registeredDuringRender === true)
+				then this property is set to true when this component has been inserted into the DOM of its parent (not necessairly the permanent DOM, 
+				but also including the temporary DOM generated during re-renders). See issue #26 for a full explanation.
+		*/
+		this._insertedIntoParent = false;
+		
 		/*	Property: this._renderjQuery
 				Boolean, set to true if the component `_render` method returns jQuery encapsulated HTMLElement, set to false (the default) if the component renders 
 				plain HTMLElements.
@@ -852,6 +865,12 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 					var sectionItemComponents = sectionComponents[a];
 					for (var b = 0; b < sectionItemComponents.length; b++) {
 						var childComponent = sectionItemComponents[b];
+						
+						// if the child component was registered during the parent's render process 
+						// and was inserted into the parent's dom from a previous render process, then we can skip it (see related issue #26 for full explanation)
+						if (childComponent._registeredDuringRender === true && childComponent._insertedIntoParent === true) {
+							continue;
+						}
 
 						// find the custom tag for where we'll be inserting the rendered child component
 						var childTarget = cloneRepeatSection.find(childComponent.options.tagName);
@@ -891,6 +910,9 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 							insertedChildren.push.apply(insertedChildren, renderResult.insertedChildren);
 
 							childTarget.replaceWith(renderResult.elmt);
+							
+							// mark the child component as inserted into the parent so we know not to insert it into the parent again during successive re-renders
+							childComponent._insertedIntoParent = true;
 
 						// else if there are multiple tags in the rendered component that match this child component's tag, then we need to throw an error
 						// if there are duplicate tags in the repeatable section that match this child component, then it's impossible to know which one is the right one
@@ -926,6 +948,14 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 
 		var i = this.childComponents["default"].length;
 		while (i--) {
+			
+			// if the child component was registered during the parent's render process 
+			// and was inserted into the parent's dom from a previous render process, then we can skip it (see related issue #26 for full explanation)
+			if (this.childComponents["default"][i]._registeredDuringRender === true && this.childComponents["default"][i]._insertedIntoParent === true) {
+				continue;
+			}
+				
+			
 			var insertTarget = jqDom.find(this.childComponents["default"][i].options.tagName);
 			if (insertTarget.length === 1) {
 
@@ -939,6 +969,10 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 				insertedChildren.push.apply(insertedChildren, renderResult.insertedChildren);
 
 				insertTarget.replaceWith(renderResult.elmt);
+				
+				// mark the child component as inserted into the parent so we know not to insert it into the parent again during successive re-renders
+				this.childComponents["default"][i]._insertedIntoParent = true;
+				
 			} else if (insertTarget.length > 1) {
 				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+this.childComponents["default"][i].options.tagName+"> tags. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
 			}
@@ -1186,6 +1220,20 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 			}
 		}
 		if (typeof this.childComponents[sectionName] === "undefined") this.childComponents[sectionName] = [];
+		
+		// if this child component was registered while the parent component is rendering, then we need to mark
+		// that fact on the child component so that successive refreshes can be handled properly (i.e., we don't continue to register
+		// more and more components on each refresh).
+		if (this._renderRunning === true) {
+			if (childComponent instanceof Array) {
+				var i = childComponent.length;
+				while (i--) {
+					childComponent[i]._registeredDuringRender = true;
+				}
+			} else {
+				childComponent._registeredDuringRender = true;
+			}
+		}
 
 		// if the child component has not already been registered, then register it
 		if (this.childComponents[sectionName].indexOf(childComponent) === -1) {
