@@ -1,6 +1,6 @@
 /*
  * 	Nimbly
- *	Version 0.0.9
+ *	Version 0.1.0
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
@@ -780,11 +780,10 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 	constructor.prototype._validateRender = function(jqDom) {
 		// if the component ._render and ._renderLoading methods are supposed to return a jQuery-referenced HTMLElement and it's not jquery-referened then throw an error
 		if (this._renderjQuery === true && (!(jqDom instanceof $))) {
-			throw new Error(this.className + ".render() cannot continue. "+this.className+"._render() returned a jQuery-encapsulated HTMLElement but your component settings (options.renderjQuery) indicate that it should have returned a plain HTMLElement.");
-		
+			throw new Error(this.className + ".render() cannot continue. "+this.className+"._render() did not return a jQuery-encapsulated HTMLElement but your component settings indicate that it should have (options.renderjQuery === true).");
 		// else if component's ._render and ._renderLoading methods are supposed to return plain HTMLElements and it didn't return a plain HTMLElement, then we need to throw an error.
 		} else if (this._renderjQuery === false && (jqDom instanceof $ || (!(jqDom instanceof HTMLElement)))) {			
-			throw new Error(this.className + ".render() cannot continue. "+this.className+"._render() returned an HTMLElement but your component settings (options.renderjQuery) indicate that it should have returned a jQuery-encapsulated HTMLElement.");
+			throw new Error(this.className + ".render() cannot continue. "+this.className+"._render() did not return an HTMLElement. Use this.parseHTML to render your component. Otherwise, if you intend to render a jQuery-encapsulated HTMLElement, then remember to set options.renderjQuery to true.");
 		}
 		
 		// verify that the render method returned exactly one top-level element
@@ -815,8 +814,19 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 		return jqDom;
 	};
 	
+	
+	/*	Function: this.parseHTML
+			Utility method intended to assist components with the process of converting HTML into an HTMLElement that the components
+			can then bind event handlers to.
+	
+		Parameters:
+			strHTML - a string of HTML that should be converted into an HTMLElement. Should only have one top-level element.
+			
+		Returns:
+			HTMLElement
+	*/
 	var parser = new DOMParser();
-	constructor.prototype._parseHTML = function(strHTML) {
+	constructor.prototype.parseHTML = function(strHTML) {
 		return parser.parseFromString(strHTML, "text/html").body.firstChild;
 	};
 

@@ -104,7 +104,7 @@ var HelloWorld = function(Mustache,Nimbly,PersonData,ListItemComp) {
 			};
 			
 			var tpl = Mustache.render(this.templates["t4m_template_1"], tplData);
-			var dom = this._parseHTML(tpl);
+			var dom = this.parseHTML(tpl);
 
 			if (dom.getElementsByClassName("user_name_text").length > 0) {
 				
