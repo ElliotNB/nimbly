@@ -29,6 +29,7 @@ var HelloWorld = function($,Mustache,Nimbly,HelloWorldList) {
 			,list_items:null
 		}
 		,delayInit:false
+		,renderjQuery:true
 	};
 	
 	class componentClass extends Nimbly {

@@ -25,6 +25,7 @@ var HelloWorldListItem = function($,Mustache,Nimbly) {
 			,selected:null
 		}
 		,delayInit:false
+		,renderjQuery:true
 	};
 	
 	class componentClass extends Nimbly {
