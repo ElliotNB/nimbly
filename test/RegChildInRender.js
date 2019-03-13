@@ -76,8 +76,6 @@ var RegChildInRender = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 		};
 
 		_init() {
-			var personData = new PersonData(this.data,null);
-			this.registerChild(personData);
 
 			var i = 4;
 			while (i--) {
@@ -90,6 +88,9 @@ var RegChildInRender = function($,Mustache,Nimbly,PersonData,ListItemComp) {
 		_render() {
 
 			var self = this;
+			
+			var personData = new PersonData(this.data,null);
+			this.registerChild(personData);
 			
 			var i = this.data.list_item_count;
 			while (i--) {

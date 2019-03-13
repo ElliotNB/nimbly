@@ -113,6 +113,8 @@ describe('HelloWorld component test suite.', function() {
 	var PersonData = require("../PersonData.js")($,Mustache,Nimbly);
 	var ListItemComp = require("../ListItemComp.js")($,Mustache,Nimbly,GrandChildComp);
 	var BadComponent = require("../BadComponent.js")($,Mustache,Nimbly);
+	var RendersDouble = require("../RendersDouble.js")($,Mustache,Nimbly);
+	var NoRenderMethod = require("../NoRenderMethod.js")($,Mustache,Nimbly);
 	var AnotherBadComponent = require("../AnotherBadComponent.js")($,Mustache,Nimbly);
 	var EmptyLoadingTpl = require("../EmptyLoadingTpl.js")($,Mustache,Nimbly);
 	var NonExistBindingMethod = require("../NonExistBindingMethod.js")($,Mustache,Nimbly);
@@ -303,6 +305,24 @@ describe('HelloWorld component test suite.', function() {
 		expect(function() {
 			badComponent.render();
 		}).to.throw();
+	});
+	
+	it('A component whose _render methods returns more than one top-level element should throw an error.', () => {
+		var rendersDouble = new RendersDouble();
+		expect(function() {
+			rendersDouble.render();
+		}).to.throw();
+	});
+	
+	it('A component without a render method should just render the first defined template.', async() => {
+		var noRender = new NoRenderMethod();
+		
+		var jqDom = noRender.render();
+		
+		await whenReady(noRender);
+		
+		expect($.trim(jqDom.html())).to.equal("Hello world");
+		
 	});
 	
 	it('Data change triggers fetch method whose response triggers a data change and a refresh.', async() => {
