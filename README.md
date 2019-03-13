@@ -162,9 +162,9 @@ JavaScript does not support protected methods, but the following methods are **i
 		
 	* *Returns:* Nothing.
 
-2. **`parseHTML(childComponent, sectionName)`** - Utility method intended to assist components with the process of converting HTML into an HTMLElement that the components can then bind event handlers to.
+2. **`parseHTML(strHTML)`** - Utility method intended to assist components with the process of converting HTML into an HTMLElement that the components can then bind event handlers to.
 	* *Parameters:*
-		* `childComponent` - A string of HTML that should be converted into an HTMLElement. Should only have one top-level element (e.g., `<div>one</div><div>two</div>` is not allowed).
+		* `strHTML` - A string of HTML that should be converted into an HTMLElement. Should only have one top-level element (e.g., `<div>one</div><div>two</div>` is not allowed).
 		
 	* *Returns:* HTMLElement.
 	
