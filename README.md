@@ -18,17 +18,33 @@ The README below is best used as a reference manual. Beginners should first cons
 
 ## Overview
 
+## What is Nimbly?
+
 Nimbly is a JavaScript component framework for single page applications.
 
-The objectives of Nimbly are as follows:
+## Why yet another JS framework?
+
+Modern web application development is run amok with excessive tooling and [leaky abstractions](https://www.joelonsoftware.com/2002/11/11/the-law-of-leaky-abstractions/). Babel, Webpack, JSX, virtual DOM, source maps, etc -- it's all unncessairly complicated.  As the 2018 [npm developer survey](https://medium.com/npm-inc/this-year-in-javascript-2018-in-review-and-npms-predictions-for-2019-3a3d7e5298ef) concluded: 
+
+> JavaScript in 2018 is somewhat notorious for requiring a lot of tooling to get going, which is quite a reversal from the situation in 2014... True to that, all of our survey respondents would like to see less tooling, less configuration required to get started, and better documentation of the tools that do exist.
+
+The goal of Nimbly is to keep things simple.
+
+## What makes Nimbly different?
+
+* **Fewer abstractions** - Nimbly embraces the native DOM. It does not use a virtual DOM abstraction. Nimbly components render plain HTMLElements.
+* **No build steps** - The code you write runs in the browser. Nimbly does not require transpiling (e.g., Babel) nor a build process (e.g., Webpack).
+* **No DSLs** - Write code with plain HTML, CSS and JavaScript. You don't need to learn another domain specific language (e.g., React JSX).
+* **Easy to debug** - Fewer abstractions, no DSLs and ES5 support without transpiling means that Nimbly components are easy to debug. Short stack traces and a minimum of framework-specific error sleuthing.
+* **"Plays nice"** - Nimbly is self-contained and does not take over the page. Nimbly is perfectly happy existing alongside other non-Nimbly components.
+
+The technical objectives of Nimbly are:
 
 * Encourage adoption of SPA best practices:
 	* Templating.
     * One-way data binding.
     * Intuitive and consistent state management.
     * Elimination of explicit DOM manipulations.
-    * Dependency injection.
-    * Automated unit testing.
 	* Loosely coupled modular components.
 * Encourage expressive and easy-to-follow code:
 	* Reduce boilerplate code.
@@ -36,16 +52,10 @@ The objectives of Nimbly are as follows:
 	* Easily identifiable state mutations.
 	* Clear linking of state to display.
 	* Common public methods and lifecycle hooks for all components.	
-* Facilitate easier re-factors of jQuery-heavy legacy code.
-* Coordinate refreshes amongst all components on the page to minimize re-draws and improve the user experience.
-
-**What makes Nimbly different?**
-
-* **Fewer abstractions** - Nimbly embraces the native DOM. It does not require the use of a virtual DOM abstraction. Nimbly components render plain HTMLElements.
-* **No build steps** - The code you write is what ends up in the browser. No mandatory transpiling nor build process.
-* **No DSLs** - Write code with plain HTML, CSS and JavaScript. You don't need to learn another domain specific language (e.g., JSX).
-* **Easy to debug** - fewer abstractions, no DSLs and ES5 support without transpiling means that Nimbly components are easy to debug. Short stack traces and a minimum of framework-specific error sleuthing.
-* **"Plays nice"** - Nimbly is self-contained and does not take over the page. Nimbly is perfectly happy existing alongside other non-Nimbly components.
+* Provide easy-to-use patterns for:
+	* Dependency injection.
+    * Automated unit testing.
+* Coordinate DOM updates amongst all components to minimize page re-draws, optimize performance and improve the user experience.
 
 ## Requirements
 
