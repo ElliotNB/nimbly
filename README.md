@@ -18,11 +18,11 @@ The README below is best used as a reference manual. Beginners should first cons
 
 ## Overview
 
-## What is Nimbly?
+### What is Nimbly?
 
 Nimbly is a JavaScript component framework for single page applications.
 
-## Why yet another JS framework?
+### Why yet another JS framework?
 
 Modern web application development is run amok with excessive tooling and [leaky abstractions](https://www.joelonsoftware.com/2002/11/11/the-law-of-leaky-abstractions/). Babel, Webpack, JSX, virtual DOM, source maps, etc -- it's all unncessairly complicated.  As the 2018 [npm developer survey](https://medium.com/npm-inc/this-year-in-javascript-2018-in-review-and-npms-predictions-for-2019-3a3d7e5298ef) concluded: 
 
@@ -30,7 +30,7 @@ Modern web application development is run amok with excessive tooling and [leaky
 
 The goal of Nimbly is to keep things simple.
 
-## What makes Nimbly different?
+### What makes Nimbly different?
 
 * **Fewer abstractions** - Nimbly embraces the native DOM. It does not use a virtual DOM abstraction. Nimbly components render plain HTMLElements.
 * **No build steps** - The code you write runs in the browser. Nimbly does not require transpiling (e.g., Babel) nor a build process (e.g., Webpack).
