@@ -17,9 +17,6 @@ var HelloWorldListItem = function($,Mustache,Nimbly) {
 		,uiBindings:{
 			customer_name: true
 		}
-		,dataBindings:{
-			//user_id:{ delayRefresh:false, methods:["_fetchUser"] }
-		}
 		,data:{
 			customer_name:null
 			,selected:null

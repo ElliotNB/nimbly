@@ -21,7 +21,7 @@ var HelloWorld = function($,Mustache,Nimbly,HelloWorldList) {
 			user_name: [".t4m-username-title"]
 		}
 		,dataBindings:{
-			user_id:{ delayRefresh:false, methods:["_fetchUser"] }
+			user_id:{ methods:["_fetchUser"] }
 		}
 		,data:{
 			user_id:null

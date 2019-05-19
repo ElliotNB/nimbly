@@ -2,7 +2,7 @@
 
 **Want to learn how to use Nimbly in 10 minutes or less? Follow this quick start guide:**
 
-1. Copy the `sample` folder to a web accessible directory.
+1. `git clone` the Nimbly repo.
 2. Open `sample/index.html` in a web browser.
 3. Open `sample/hello-world.js`, `sample/hello-world-list.js` and `sample/hello-world-list-item.js` in your IDE.
 
@@ -50,14 +50,14 @@ Similar to `uiBindings`, each component may have a definition of what methods sh
 
 ### Build a Nimbly component
 
-To build a Nimbly component, follow these steps:
+To build your first Nimbly component, follow these steps:
 
 1. Name the class for your component (e.g., `HelloWorld`) and encapsulate it with a dependency injection wrapper. The wrapper function argument list should contain all dependencies required by the component:
 
 As per `sample/hello-world.js`:
 
 ```javascript
-const HelloWorld = function($,Mustache,Nimbly,HelloWorldList) {
+var HelloWorld = function($,Mustache,Nimbly,HelloWorldList) {
     // component code will go here
 }
 

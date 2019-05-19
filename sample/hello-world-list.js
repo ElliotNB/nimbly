@@ -5,7 +5,7 @@ var HelloWorldList = function($,Mustache,Nimbly,HelloWorldListItem) {
 		,templates:{
 			t4m_tpl_cm_hello_world_list:`
 				<div>
-					<div>Hello World list:</div>
+					<div>Hello World list <small>(click to change selected item)</small>:</div>
 					<ul>
 						<list-items>
 							<hello-world-list-item></hello-world-list-item>
