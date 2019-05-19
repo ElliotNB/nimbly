@@ -24,7 +24,7 @@ Nimbly is a JavaScript component framework for single page applications.
 
 ### Why yet another JS framework?
 
-Modern web application development is run amok with excessive tooling and [leaky abstractions](https://www.joelonsoftware.com/2002/11/11/the-law-of-leaky-abstractions/). Babel, Webpack, JSX, virtual DOM, source maps, etc -- it's all unncessairly complicated.  As the 2018 [npm developer survey](https://medium.com/npm-inc/this-year-in-javascript-2018-in-review-and-npms-predictions-for-2019-3a3d7e5298ef) concluded: 
+Modern web application development is run amok with excessive tooling and [leaky abstractions](https://www.joelonsoftware.com/2002/11/11/the-law-of-leaky-abstractions/). Babel, Webpack, JSX, virtual DOM, source maps, etc -- it's all unnecessarily complicated.  As the 2018 [npm developer survey](https://medium.com/npm-inc/this-year-in-javascript-2018-in-review-and-npms-predictions-for-2019-3a3d7e5298ef) concluded: 
 
 > JavaScript in 2018 is somewhat notorious for requiring a lot of tooling to get going, which is quite a reversal from the situation in 2014... True to that, all of our survey respondents would like to see less tooling, less configuration required to get started, and better documentation of the tools that do exist.
 
