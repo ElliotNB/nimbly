@@ -89,6 +89,7 @@ var HelloWorld = function(Mustache,Nimbly,PersonData,ListItemComp) {
 				var listItem = new ListItemComp(this.data,null);
 				this.registerChild([listItem], "repeat-list");
 			}
+			
 		};
 
 		_render() {

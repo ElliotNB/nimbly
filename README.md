@@ -188,6 +188,13 @@ When using the second mode, `registerChild` should be invoked for each iteration
 		* `strHTML` - A string of HTML that should be converted into an HTMLElement. Should only have one top-level element (e.g., `<div>one</div><div>two</div>` is not allowed).
 		
 	* *Returns:* HTMLElement.
+
+3. **`addTemplate(templateName, templateHtml)`** - Templates are typically defined statically in the component config. This method allows us to add more templates during runtime.
+	* *Parameters:*
+		* `templateName` - string, required, a descriptive alphanumeric for the template, dashes and underscores allowed (e.g., my_template_name).
+		* `templateHtml` - string, required, the HTML content of the template.
+		
+	* *Returns:* HTMLElement.
 	
 ## Component Methods
 

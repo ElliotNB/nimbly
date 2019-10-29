@@ -829,6 +829,31 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 	constructor.prototype.parseHTML = function(strHTML) {
 		return parser.parseFromString(strHTML, "text/html").body.firstChild;
 	};
+	
+	/*	Function: this.addTemplate
+			Templates are typically defined statically in the component config. This method allows us to add more templates 
+			during runtime.
+		
+		Parameters:
+			templateName - string, required, a descriptive alphanumeric for the template, dashes and underscores allowed (e.g., my_template_name).
+			templateHtml - string, required, the HTML content of the template.
+			
+		Returns:
+			Nothing.
+	*/
+	constructor.prototype.addTemplate = function(templateName, templateHtml) {
+		
+		// throw an error if the user attempts to pass in an invalid template
+		if (typeof(templateHtml) !== "string") throw new Error("Nimbly::addTemplate() cannot continue. templateHtml must be a string.");
+		
+		// throw an error is template name isn't valid
+		if (typeof(templateName) !== "string" || templateName.length == 0) throw new Error("Nimbly::addTemplate() cannot continue. templateName must be a string.");
+		
+		// log a warning if the user is about to overwrite an existing template
+		if (typeof(this.templates[templateName]) !== "undefined") console.warn("Nimbly::addTemplate() is about to overwrite template '" + templateName + "'.");
+		
+		this.templates[templateName] = templateHtml;
+	};
 
 
 	/*	Method: this._insertChildren

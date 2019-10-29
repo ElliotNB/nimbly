@@ -252,6 +252,14 @@ describe('HelloWorld component test suite.', function() {
 		expect(helloWorld.data.dummy_field_2).to.equal("foobar test");
 
 	});
+	
+	it('Add a template at runtime.', () => {
+		
+		helloWorld.addTemplate("test_runtime_template","<div>Hello world</div>");
+		
+		expect(helloWorld.templates["test_runtime_template"]).to.equal("<div>Hello world</div>");
+		
+	});
 
 	it('Trigger a manual refresh.', async() => {
 
