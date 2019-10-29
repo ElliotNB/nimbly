@@ -166,11 +166,22 @@ All Nimbly components have the following public methods:
 JavaScript does not support protected methods, but the following methods are **intended** to be used as protected methods. They should not be invoked externally, but they may be invoked within component class that extends the `Nimbly` base class.
 	
 1. **`registerChild(childComponent, sectionName)`** - When a component nests other components within it, we refer to the original component as the "parent component" and the nested component(s) as "child component(s)". In order for refreshes of the parent component to work properly, we must register the child components on the parent component. This will allow our .refresh() method to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
+
+This method is overloaded -- it can either accept one child component or it can register a set of child components belonging to a repeatable section:
+
+First mode -- one parameter -- register one stand-alone child component at a time:
 	* *Parameters:*
 		* `childComponent` - an instance of a component that extends this base class (Nimbly).
-		* `sectionName` - optional, if the child component belongs to a list (repeated section), then the `sectionName` should equal the custom tag name in the template that encloses the list.
+	* *Returns:* Nothing.
+	
+Second mode -- two parameters -- register one or more componets to a repeatable section (i.e., a list):
+	* *Parameters:*
+		* `childComponents` - an array of Nimbly components -- the number of components in this array should be equal to the number of child components defined in a repeatable section template. For example, if we have a repeatable section defined like this: `<list><child-one></child-one><child-two></child-two></list>` then both `child-one` and `child-two` should be included in the `childComponents` array.
+		* `sectionName` - string, optional, if the child component belongs to a list (repeated section), then the `sectionName` should equal the custom tag name in the template that encloses the list.
 		
 	* *Returns:* Nothing.
+
+When using the second mode, `registerChild` should be invoked for each iteration of the repeatable section.
 
 2. **`parseHTML(strHTML)`** - Utility method intended to assist components with the process of converting HTML into an HTMLElement that the components can then bind event handlers to.
 	* *Parameters:*
