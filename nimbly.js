@@ -9,8 +9,8 @@
  *	Nimbly is a JavaScript component framework for single page applications. The objectives of Nimbly are as follows:
  *
  */
-var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParser, document) {
-
+var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnknownElement, DOMParser, document) {
+	
 	if (typeof $ === "undefined") throw new Error("Nimbly requires jQuery 1.9+.");
 	if (typeof ObservableSlim === "undefined") throw new Error("Nimbly requires ObservableSlim 0.1.0+.");
 
@@ -830,6 +830,85 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 		return parser.parseFromString(strHTML, "text/html").body.firstChild;
 	};
 	
+	/*	Function: this.getTemplateComponents
+			Utility method that will fetch a breakdown of all the child components defined in a given template.
+		
+		Parameters:
+			templateName - required, string, the name of the template that should be evaluated. The template should already be defined (or 
+				registered at runtime via this.addTemplate) on the component (i.e., present on this.templates).
+		
+		Returns:
+			Array of objects -- array contains a breakdown of all child components defined in the template as well as any attribute values 
+			defined in the template.
+	
+	*/
+	constructor.prototype.getTemplateComponents = function(templateName) {
+		
+		// throw an error is template name isn't valid
+		if (typeof(templateName) !== "string" || templateName.length == 0) throw new Error("Nimbly::getTemplateComponents() cannot continue. templateName must be a string.");
+		
+		// throw an error if the template doesn't exist
+		if (typeof(this.templates[templateName]) === "undefined") throw new Error("Nimbly::getTemplateComponents() cannot continue. Template '"+templateName+"' does not exist.");
+		
+		// parse the template so we can iterate over each dom node
+		var templateDom = this.parseHTML(this.templates[templateName]);
+		
+		var childComponents = [];
+		
+		// recursive function that we'll use to iterate over each node in the template
+		var walkTheDom = function(node, func) {
+			func(node);
+			node = node.firstChild;
+			while (node) {
+				walkTheDom(node, func);
+				node = node.nextSibling;
+			}
+		};
+
+		// kick off the dom walk, for each node we evaluate whether or not it's a standard HTML tag
+		// if a node isn't a standard html element, then we assume it's a child component
+		// TO DO: identify repeatable sections and the child components that belong to repeatable sections
+		walkTheDom(templateDom, function(node) {
+
+			// if the node is a non-standard element OR it's a table, tbody, select, etc containing the "is" 
+			// attribute), then we assume it's a child component
+			// TO DO: limit the checks for "is" attributes to the specific elements (table, tbody, select, etc)
+			if ((
+					typeof(node.tagName) !== "undefined"
+					// remove hyphens from the tag name, resolves a bug in Chrome where if the tagname contains a
+					// hyphen, then it is not an instance of HTMLUnknownElement, but instead a plain HTMLElement
+					&& document.createElement(node.tagName.replace(/\W/g, '')) instanceof HTMLUnknownElement	
+				)
+				|| 
+				(
+					typeof node["attributes"] !== "undefined" 
+					&& typeof node.attributes["is"] === "object"
+				)) 
+			{
+				
+				// if this is a special element that we've defined with the "is" attribute (table, tbody, select, etc elements have special treatment by
+				// the browser and cannot be replaced with generic tags)
+				if (typeof node.attributes["is"] === "object") {
+					var childComponent = {"tagName":node.attributes["is"].value.toUpperCase()};
+				} else {
+					var childComponent = {"tagName":node.tagName};
+				}
+				
+				childComponent.attributes = {};
+				
+				// make a copy of all the attributes defined on the node
+				for (var i = 0; i < node.attributes.length; i++) {
+					childComponent.attributes[node.attributes[i].name] = node.attributes[i].value;
+				}
+				
+				childComponents.push(childComponent);
+			}
+		});
+		
+		return childComponents;
+		
+	};
+	
 	/*	Function: this.addTemplate
 			Templates are typically defined statically in the component config. This method allows us to add more templates 
 			during runtime.
@@ -1356,9 +1435,9 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParse
 };
 
 if (typeof module === "undefined") {
-	window["Nimbly"] = Nimbly($, ObservableSlim, MutationObserver, HTMLElement, DOMParser, document);
+	window["Nimbly"] = Nimbly($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnknownElement, DOMParser, document);
 } else {
-	module.exports = function($, ObservableSlim, MutationObserver, HTMLElement, DOMParser, document) {
-		return Nimbly($, ObservableSlim, MutationObserver, HTMLElement, DOMParser, document);
+	module.exports = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnknownElement, DOMParser, document) {
+		return Nimbly($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnknownElement, DOMParser, document);
 	};
 }

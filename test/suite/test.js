@@ -37,7 +37,7 @@ describe('HelloWorld ES5 component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,Object,window.DOMParser, window.document);
+	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,window.HTMLElement,window.HTMLUnknownElement,window.DOMParser, window.document);
 	
 	var PersonData = require("../PersonData.es5.js")($,Mustache,Nimbly);
 	var HelloWorldES5 = require("../HelloWorld.es5.js")($,Mustache,Nimbly,PersonData);
@@ -108,7 +108,7 @@ describe('HelloWorld component test suite.', function() {
 	$.ajaxSettings.xhr = function() { return new XMLHttpRequest(); };
 
 	// initialize the base class and our components with all required dependencies
-	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,Object, window.DOMParser, window.document);
+	var Nimbly = require("../../nimbly.js")($,ObservableSlim,MutationObserver,window.HTMLElement,window.HTMLUnknownElement, window.DOMParser, window.document);
 	var GrandChildComp = require("../GrandChildComp.js")($,Mustache,Nimbly);
 	var PersonData = require("../PersonData.js")($,Mustache,Nimbly);
 	var ListItemComp = require("../ListItemComp.js")($,Mustache,Nimbly,GrandChildComp);
@@ -258,6 +258,17 @@ describe('HelloWorld component test suite.', function() {
 		helloWorld.addTemplate("test_runtime_template","<div>Hello world</div>");
 		
 		expect(helloWorld.templates["test_runtime_template"]).to.equal("<div>Hello world</div>");
+		
+	});
+	
+	it('Parse out child components from a template.', () => {
+		
+		var childComponents = helloWorld.getTemplateComponents("t4m_template_1");
+		
+		expect(childComponents.length).to.equal(5);
+		expect(childComponents[0].tagName).to.equal("REPEAT-LIST");
+		expect(childComponents[1].attributes.is).to.equal("list-item-test");
+		
 		
 	});
 
