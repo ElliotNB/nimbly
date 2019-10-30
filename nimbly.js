@@ -212,6 +212,13 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 				base class to clean up and delete any orphaned components after a ._refresh() occurs.
 		*/
 		this.childComponents = {"default":[]};
+		
+		/*	Property: this._tagName
+				String, if a component is registered as a child of a parent component, it must be given a tag name so that Nimbly knows
+				where to insert it in the template of the parent component. This property gets set when the parent component invokes `registerChild`
+				and passes in this child component.
+		*/
+		this._tagName = null;
 
 		/*	Property: this._refreshList
 				Array or boolean, used to store CSS selectors for the portions of the component that must be updated given the recent data change. If set
@@ -987,7 +994,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 						}
 
 						// find the custom tag for where we'll be inserting the rendered child component
-						var childTarget = cloneRepeatSection.find(childComponent.options.tagName);
+						var childTarget = cloneRepeatSection.find(childComponent._tagName);
 
 						// if we didn't find a matching custom tag for the child component, then it's possible it could be contained
 						// in a special tag that must be used in order to appear within <select> <table> <ul> or <ol> elements
@@ -996,7 +1003,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 
 							possibleAltMatches.each(function(i, elmt) {
 								var jqElmt = $(elmt);
-								if (jqElmt.attr("is") === childComponent.options.tagName) {
+								if (jqElmt.attr("is") === childComponent._tagName) {
 									childTarget = jqElmt;
 
 									// remove the is attribute as an indicator that the component has been populated
@@ -1032,7 +1039,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 						// if there are duplicate tags in the repeatable section that match this child component, then it's impossible to know which one is the right one
 						// to insert the child component
 						} else if (childTarget.length > 1) {
-							throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+childComponent.options.tagName+"> tags. A repeatable section must not contain duplicate child tags.");
+							throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+childComponent._tagName+"> tags. A repeatable section must not contain duplicate child tags.");
 						}
 
 					}
@@ -1070,7 +1077,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			}
 				
 			
-			var insertTarget = jqDom.find(this.childComponents["default"][i].options.tagName);
+			var insertTarget = jqDom.find(this.childComponents["default"][i]._tagName);
 			if (insertTarget.length === 1) {
 
 				var renderResult = this.childComponents["default"][i]._renderWithChildren();
@@ -1088,7 +1095,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 				this.childComponents["default"][i]._insertedIntoParent = true;
 				
 			} else if (insertTarget.length > 1) {
-				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+this.childComponents["default"][i].options.tagName+"> tags. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
+				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+this.childComponents["default"][i]._tagName+"> tags. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
 			}
 		};
 
@@ -1301,58 +1308,118 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			the nested component(s) as "child component(s)". In order for refreshes of the parent component to work properly,
 			we must register the child components on the parent component. This will allow our ._refresh() method
 			to intelligently determine if it is necessary to re-render the child component(s) when an update occurs to the parent component.
-		Parameters:
-			childComponent - required, either a single child component instance or an array of child components. If the latter, then the sectionName is also required.
-			sectionName - optional, specifies the tag name of the repeatable section that a set of child components should be added to.
-	*/
-	constructor.prototype.registerChild = function(childComponent, sectionName) {
 		
-		// verify that the childComponent is a valid component
-		if (childComponent instanceof Array) {
-			var i = childComponent.length;
+			This method is overloaded. It has two modes of operation depending on what arguments are passed in.
+		
+		First mode - register single stand-alone component:
+		
+		Parameters:
+			childComponents - required, a single Nimbly child component instance.
+			targetName - required, the tag name of the component as defined in the parent component's template.
+			
+		Second mode - register multiple components to a repeatable section:
+		
+		Parameters:
+			childComponents - required, an array of objects with the following structure:
+				[
+					{
+						"comp":child1,
+						"tagName":"child-comp-one"
+					}, 
+					{
+						"comp":child2,
+						"tagName":"child-comp-two"
+					}    
+				]
+			targetName - required, the tag name of the repeatable section that the child components will be inserted into
+	*/
+	constructor.prototype.registerChild = function(childComponents, targetName) {
+		
+		if (typeof targetName === "undefined") throw new Error("Nimbly cannot register this component -- targetName must be specified.");
+		
+		var sectionName = null;
+		
+		// if we received an array of components, then we need to validate that each component is a Nimbly component
+		if (childComponents instanceof Array) {
+			var i = childComponents.length;
 			while (i--) {
-				if (isValidComponent(childComponent[i]) === false) {
-					throw new Error("Nimbly cannot register this component. It is not a valid Nimbly component.");
+				
+				if (typeof childComponents[i].comp === "undefined") throw new Error("Nimbly cannot register this set of components -- 'comp' attribute must be specified.");
+				if (typeof childComponents[i].tagName === "undefined") throw new Error("Nimbly cannot register this set of components -- 'tagName' attribute must be specified.");
+				
+				if (isValidComponent(childComponents[i].comp) === false) {
+					throw new Error("Nimbly cannot register this set of components. Encountered one or more non-Nimbly components.");
 				}
 			};
+		
+		// else the user just passed in one stand-alone component, so just validate the single component
 		} else {
-			if (isValidComponent(childComponent) === false) {
+			if (isValidComponent(childComponents) === false) {
 				throw new Error("Nimbly cannot register this component. It is not a valid Nimbly component.");
 			}
 		}
 
 		// if a section name was not specified (meaning that the child component does not belong to a repeatable section
 		// then we simply assign the component to the default section
-		if (typeof sectionName === "undefined") {
-				sectionName = "default";
-
+		//if (typeof sectionName === "undefined") {
+		//		sectionName = "default";
+		//
 		// else the user is passing in one or more components that will populate a single list item in a repeatable section
 		// therefore we must enforce that components be supplied in an array.
+		//} else {
+		//	if (!(childComponents instanceof Array)) {
+		//		throw new Error("When registering child components in a repeatable section, the child components must be registered in an array with each registration representing one repetition of the section (e.g., this.registerChild([childA, childB], 'section-name');).");
+		//	}
+		//}
+		
+		// if the user passed in a single stand-alone component, then that component does not belong
+		// to a repeatable section and we place it into the "default" stack.
+		if (!(childComponents instanceof Array)) {
+			sectionName = "default";
+		
+		// else the user passed in a set of components belonging to a repeatable section and the targetName
+		// is the section tagName that the components will be inserted into
 		} else {
-			if (!(childComponent instanceof Array)) {
-				throw new Error("When registering child components in a repeatable section, the child components must be registered in an array with each registration representing one repetition of the section (e.g., this.registerChild([childA, childB], 'section-name');).");
-			}
+			sectionName = targetName;
 		}
+		
 		if (typeof this.childComponents[sectionName] === "undefined") this.childComponents[sectionName] = [];
 		
 		// if this child component was registered while the parent component is rendering, then we need to mark
 		// that fact on the child component so that successive refreshes can be handled properly (i.e., we don't continue to register
 		// more and more components on each refresh).
 		if (this._renderRunning === true) {
-			if (childComponent instanceof Array) {
-				var i = childComponent.length;
+			if (childComponents instanceof Array) {
+				var i = childComponents.length;
 				while (i--) {
-					childComponent[i]._registeredDuringRender = true;
+					childComponents[i].comp._registeredDuringRender = true;
 				}
 			} else {
-				childComponent._registeredDuringRender = true;
+				childComponents._registeredDuringRender = true;
 			}
 		}
+		
+		if (childComponents instanceof Array) {
+			var setOfComps = [];
+			for (var i = 0; i < childComponents.length; i++) {
+				childComponents[i].comp._tagName = childComponents[i].tagName;
+				setOfComps.push(childComponents[i].comp);
+			}
 
-		// if the child component has not already been registered, then register it
-		if (this.childComponents[sectionName].indexOf(childComponent) === -1) {
-			this.childComponents[sectionName].push(childComponent);
+			this.childComponents[sectionName].push(setOfComps);
+			
+		} else {
+			
+			childComponents._tagName = targetName;
+			
+			// if the child component has not already been registered, then register it
+			if (this.childComponents[sectionName].indexOf(childComponents) === -1) {
+				this.childComponents[sectionName].push(childComponents);
+			}
+			
 		}
+		
+		
 	};
 
 	/*	Method: this.destroy

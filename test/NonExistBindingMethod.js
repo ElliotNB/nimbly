@@ -1,8 +1,7 @@
 var NonExistBindingMethod = function($,Mustache,Nimbly) {
 	
 	const defaults = {
-		"tagName":"person-data"
-		,"templates":{
+		"templates":{
 			"t4m_template_2":`
 				<p class="patient_data_container">
 					Now viewing: {{patient_name}} <br>

@@ -1,8 +1,7 @@
 var NoTemplates = function($,Mustache,Nimbly) {
 	
 	const defaults = {
-		"tagName":"person-data"
-		,"templates":[]
+		"templates":[]
 		,"uiBindings":{
 			"patient_name":true
 			,"admit_date":true

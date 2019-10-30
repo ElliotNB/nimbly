@@ -1,8 +1,7 @@
 var ListItemComp = function($,Mustache,Nimbly,GrandChildComp) {
 
 	const defaults = {
-		"tagName":"list-item-test"
-		,"templates":{
+		"templates":{
 			"t4m_template_3":`
 				<li class="list-item-test">testing list items <grand-child></grand-child></li>
 			`
@@ -25,7 +24,7 @@ var ListItemComp = function($,Mustache,Nimbly,GrandChildComp) {
 			super("ListItemComp", defaults, data || {}, options || {});
 			
 			var grandChild = new GrandChildComp();
-			this.registerChild(grandChild);
+			this.registerChild(grandChild, "grand-child");
 		};
 
 		_render() {

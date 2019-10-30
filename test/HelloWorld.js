@@ -1,8 +1,7 @@
 var HelloWorld = function(Mustache,Nimbly,PersonData,ListItemComp) {
 
 	const defaults = {
-		"tagName":"hello-world"
-		,"templates":{
+		"templates":{
 			"t4m_template_1":`
 				<div>
 					<p class="hello_user_container">
@@ -76,18 +75,18 @@ var HelloWorld = function(Mustache,Nimbly,PersonData,ListItemComp) {
 
 		_init() {
 			var personData = new PersonData(this.data,null);
-			this.registerChild(personData);
+			this.registerChild(personData, "person-data");
 
 			var i = 4;
 			while (i--) {
 				var temp = new PersonData(this.data,null);
-				this.registerChild([temp], "repeat-person-data");
+				this.registerChild([{"comp":temp,"tagName":"person-data"}], "repeat-person-data");
 			}
 
 			var i = this.data.list_item_count;
 			while (i--) {
 				var listItem = new ListItemComp(this.data,null);
-				this.registerChild([listItem], "repeat-list");
+				this.registerChild([{"comp":listItem,"tagName":"list-item-test"}], "repeat-list");
 			}
 			
 		};
@@ -130,7 +129,7 @@ var HelloWorld = function(Mustache,Nimbly,PersonData,ListItemComp) {
 				dom.getElementsByClassName("add_list_item")[0].addEventListener("click", function() {
 					self.data.list_item_count = self.data.list_item_count + 1;
 					var listItem = new ListItemComp(self.data,null);
-					self.registerChild([listItem], "repeat-list");
+					self.registerChild([{"comp":listItem,"tagName":"list-item-test"}], "repeat-list");
 				});
 			}
 

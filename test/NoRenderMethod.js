@@ -1,8 +1,7 @@
 var NoRenderMethod = function($,Mustache,Nimbly) {
 	
 	const defaults = {
-		"tagName":"person-data"
-		,"templates":{
+		"templates":{
 			"t4m_template_2":`
 				<p class="no_render">
 					Hello world

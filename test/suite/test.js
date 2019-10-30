@@ -355,7 +355,7 @@ describe('HelloWorld component test suite.', function() {
 	it('Registering an non-Nimbly component as child should throw an error.', () => {
 		var notAComponent = {};
 		expect(function() {
-			helloWorld.registerChild(notAComponent);
+			helloWorld.registerChild(notAComponent, "does-not-exist");
 		}).to.throw();
 	});
 	

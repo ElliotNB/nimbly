@@ -1,7 +1,6 @@
 var HelloWorldES5 = function($,Mustache,Nimbly,PersonData) {
 	var defaults = {
-		"tagName":"hello-world"
-		,"templates":["t4m_template_1"]
+		"templates":["t4m_template_1"]
 		,"loadingTemplate":"t4m_loading_template"
 		,"initList":[{"method":"_fetchPatient","preventRender":false}]
 		,"uiBindings":{
@@ -32,12 +31,12 @@ var HelloWorldES5 = function($,Mustache,Nimbly,PersonData) {
 	
 	constructor.prototype._init = function() {
 		var personData = new PersonData(this.data,null);
-		this.registerChild(personData);
+		this.registerChild(personData, "person-data");
 		
 		var i = 4;
 		while (i--) {
 			var temp = new PersonData(this.data,null);
-			this.registerChild([temp], "repeat-person-data");
+			this.registerChild([{"comp":temp,"tagName":"person-data"}], "repeat-person-data");
 		}
 	};
 	

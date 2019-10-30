@@ -1,8 +1,7 @@
 var GrandChildComp = function($,Mustache,Nimbly) {
 
 	const defaults = {
-		"tagName":"grand-child"
-		,"templates":{
+		"templates":{
 			"t4m_template_grand_child":`
 				<span>grand child component</span>
 			`

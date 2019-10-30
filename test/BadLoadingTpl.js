@@ -1,8 +1,7 @@
 var BadLoadingTpl = function($,Mustache,Nimbly) {
 	
 	const defaults = {
-		"tagName":"person-data"
-		,"templates":["t4m_template_does_not_exist"]
+		"templates":["t4m_template_does_not_exist"]
 		,"uiBindings":{
 			"patient_name":true
 			,"admit_date":true

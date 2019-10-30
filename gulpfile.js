@@ -20,6 +20,7 @@ gulp.task('test', function(done) {
 	gulp.src(['test/suite/test.js'])
 	.pipe(mocha({compilers:babel, exit: true}))
 	.once('error', err => {
+		console.log(err);
 		process.exit(1);
 		done();
 	})

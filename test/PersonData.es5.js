@@ -1,7 +1,6 @@
 var PersonData = function($,Mustache,Nimbly) {
 	var defaults = {
-		"tagName":"person-data"
-		,"templates":["t4m_template_2"]
+		"templates":["t4m_template_2"]
 		,"loadingTemplate":null
 		,"initList":[]
 		,"uiBindings":{
