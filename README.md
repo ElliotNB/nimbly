@@ -176,7 +176,7 @@ JavaScript does not support protected methods, but the following methods are **i
 
 	* *Parameters:*
 		childComponents - required, a single Nimbly child component instance.
-		targetName - required, the tag name of the component as defined in the parent component's template.
+		targetName - required, a CSS selector that uniquely identifies the component in the parent component's template. For example, the tag `<foobar></foobar>` could be uniquely identified with the CSS selector `foobar`. Additionally, `<foobar field="test"></foobar>` could be uniquely identified with the selector `foobar[field=test]`.
 		
 	Second mode - register multiple components to a repeatable section:
 
@@ -191,11 +191,11 @@ JavaScript does not support protected methods, but the following methods are **i
 				}, 
 				{
 					"comp":child2,
-					"tagName":"child-comp-two"
+					"tagName":"child-comp-two[attr=testing]"
 				}    
 			]
 		```
-		targetName - required, the tag name of the repeatable section that the child components will be inserted into
+		targetName - required, a CSS selector that uniquely identifies the repeatable section tag that the child components will be inserted into.
 
 When using the second mode, `registerChild` should be invoked for each iteration of the repeatable section.
 

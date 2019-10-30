@@ -122,6 +122,7 @@ describe('HelloWorld component test suite.', function() {
 	var NoTemplates = require("../NoTemplates.js")($,Mustache,Nimbly);
 	var HelloWorld = require("../HelloWorld.js")(Mustache,Nimbly,PersonData,ListItemComp);
 	var RegChildInRender = require("../RegChildInRender.js")($,Mustache,Nimbly,PersonData,ListItemComp);
+	var RegChildWithAttr = require("../RegChildWithAttr.js")($,Mustache,Nimbly,PersonData,ListItemComp);
 	var helloWorld = new HelloWorld();
 	$("body").append(helloWorld.render());
 
@@ -269,6 +270,19 @@ describe('HelloWorld component test suite.', function() {
 		expect(childComponents[0].tagName).to.equal("REPEAT-LIST");
 		expect(childComponents[1].attributes.is).to.equal("list-item-test");
 		
+		
+	});
+	
+	it('Register child components using attribute identifiers.', async() => {
+		var regChildWithAttr = new RegChildWithAttr();
+		await whenReady(regChildWithAttr);
+		var dom = regChildWithAttr.render();
+		
+		var personComponents = $(dom).find(".patient_data_container");
+		
+		expect(personComponents.length).to.equal(6);
+		expect(personComponents[0].innerHTML.includes("Bobby Bob")).to.equal(true);
+		expect(personComponents[1].innerHTML.includes("Timmy Tim")).to.equal(true);
 		
 	});
 

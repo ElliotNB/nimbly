@@ -1039,7 +1039,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 						// if there are duplicate tags in the repeatable section that match this child component, then it's impossible to know which one is the right one
 						// to insert the child component
 						} else if (childTarget.length > 1) {
-							throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+childComponent._tagName+"> tags. A repeatable section must not contain duplicate child tags.");
+							throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple elements matching the '"+childComponent._tagName+"' selector. A repeatable section must not contain duplicate child tags.");
 						}
 
 					}
@@ -1062,7 +1062,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			// else if we found more than one tag that matches the repeatable section, that's a problem. you should never have a template
 			// that has two repeatable sections with the same tag name because we wouldn't know which one is the right place to populate the repeatable section
 			} else if (repeatSection.length > 1) {
-				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+sectionName+"> tags. A repeatable section must have one insertion target (i.e., one matching custom tag).");
+				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple elements matching the  '"+sectionName+"' selector. A repeatable section must have one insertion target (i.e., one matching custom tag).");
 			}
 
 		}
@@ -1095,7 +1095,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 				this.childComponents["default"][i]._insertedIntoParent = true;
 				
 			} else if (insertTarget.length > 1) {
-				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple <"+this.childComponents["default"][i]._tagName+"> tags. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
+				throw new Error("Nimbly::_insertChildren() cannot continue. Found multiple elements matching the '"+this.childComponents["default"][i]._tagName+"' selector. A child component must match exactly one tag in the parent component. If you require instances of the same child component, use a repeatable section or provide each instance a unique tag name via the options.");
 			}
 		};
 
@@ -1358,19 +1358,6 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 				throw new Error("Nimbly cannot register this component. It is not a valid Nimbly component.");
 			}
 		}
-
-		// if a section name was not specified (meaning that the child component does not belong to a repeatable section
-		// then we simply assign the component to the default section
-		//if (typeof sectionName === "undefined") {
-		//		sectionName = "default";
-		//
-		// else the user is passing in one or more components that will populate a single list item in a repeatable section
-		// therefore we must enforce that components be supplied in an array.
-		//} else {
-		//	if (!(childComponents instanceof Array)) {
-		//		throw new Error("When registering child components in a repeatable section, the child components must be registered in an array with each registration representing one repetition of the section (e.g., this.registerChild([childA, childB], 'section-name');).");
-		//	}
-		//}
 		
 		// if the user passed in a single stand-alone component, then that component does not belong
 		// to a repeatable section and we place it into the "default" stack.
@@ -1383,6 +1370,8 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			sectionName = targetName;
 		}
 		
+		// if we haven't yet registered a component to this repeatable section (or the "default" section), then we need to 
+		// instantiate the array that we'll use for storing and tracking all of this component's child components
 		if (typeof this.childComponents[sectionName] === "undefined") this.childComponents[sectionName] = [];
 		
 		// if this child component was registered while the parent component is rendering, then we need to mark
@@ -1399,6 +1388,9 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			}
 		}
 		
+		// if the user passed in a set of components to register to a repeatable section
+		// then we need to iterate over each component, set the tag name so that nimbly can accurately insert
+		// the child into the parent's template and add it to the appropriate tracking array
 		if (childComponents instanceof Array) {
 			var setOfComps = [];
 			for (var i = 0; i < childComponents.length; i++) {
@@ -1407,7 +1399,8 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			}
 
 			this.childComponents[sectionName].push(setOfComps);
-			
+		
+		// else the user just passed in one component
 		} else {
 			
 			childComponents._tagName = targetName;
