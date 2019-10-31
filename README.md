@@ -4,7 +4,7 @@
 
 https://github.com/elliotnb/nimbly
 
-Version 0.1.0
+Version 0.1.1
 
 Licensed under the MIT license:
 
@@ -172,13 +172,13 @@ JavaScript does not support protected methods, but the following methods are **i
 
 	This method is overloaded. It has two modes of operation depending on what arguments are passed in.
 
-	First mode - register single stand-alone component:
+	**First mode - register single stand-alone component:**
 
 	* *Parameters:*
 		childComponents - required, a single Nimbly child component instance.
 		targetName - required, a CSS selector that uniquely identifies the component in the parent component's template. For example, the tag `<foobar></foobar>` could be uniquely identified with the CSS selector `foobar`. Additionally, `<foobar field="test"></foobar>` could be uniquely identified with the selector `foobar[field=test]`.
 		
-	Second mode - register multiple components to a repeatable section:
+	**Second mode - register multiple components to a repeatable section:**
 
 	* *Parameters:*
 		childComponents - required, an array of objects with the following structure:
@@ -211,6 +211,12 @@ When using the second mode, `registerChild` should be invoked for each iteration
 		* `templateHtml` - string, required, the HTML content of the template.
 		
 	* *Returns:* HTMLElement.
+
+4. **`getTemplateComponents(templateName)`** - Utility method that will fetch a breakdown of all the child components defined in a given template.
+	* *Parameters:*
+		* `templateName` - string, required, the name of the template that should be evaluated. The template should already be defined (or registered at runtime via this.addTemplate) on the component (i.e., present on this.templates).
+		
+	* *Returns:* Array of objects -- array contains a breakdown of all child components defined in the template as well as any attribute values defined in the template.
 	
 ## Component Methods
 
