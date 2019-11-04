@@ -48,8 +48,8 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 		
 		// loop over every component that we're monitoring for insertion into the DOM
 		while (i--) {
-			// if the component is now in the document
-			if (document.body.contains(monitoredInsertion[i].jqDom[0])) {
+			// if the component has not been deleted (via .destroy()) and it is now in the document
+			if (monitoredInsertion[i].jqDom !== null && document.body.contains(monitoredInsertion[i].jqDom[0])) {
 				
 				// invoke the _afterInDocument lifecycle method for the component
 				monitoredInsertion[i]._afterInDocument();
@@ -1435,7 +1435,12 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			childComponent.destroy();
 		});
 		
-
+		// remove this component from being monitored for insertion into the DOM
+		var i = monitoredInsertion.indexOf(this);
+		if (i > -1) {
+			monitoredInsertion.splice(i,1);
+		}
+		
 		// Remove our data proxy from the ObservableSlim singleton. No further modifications to this.data will refreshes or fetches.
 		ObservableSlim.remove(this.data);
 
