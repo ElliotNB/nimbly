@@ -1,6 +1,6 @@
 /*
  * 	Nimbly
- *	Version 0.1.3
+ *	Version 0.1.4
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
@@ -742,8 +742,6 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			
 		}
 		
-		this._cleanOrphans();
-		
 		return {
 			"elmt": jqDom
 			,"insertedChildren":insertedChildren
@@ -767,7 +765,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 		
 		this._validateRender(jqDom);
 		
-		//this._cleanOrphans();
+		this._cleanOrphans();
 		
 		return $(jqDom);
 		
