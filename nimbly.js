@@ -1,6 +1,6 @@
 /*
  * 	Nimbly
- *	Version 0.1.2
+ *	Version 0.1.3
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
@@ -742,6 +742,8 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			
 		}
 		
+		this._cleanOrphans();
+		
 		return {
 			"elmt": jqDom
 			,"insertedChildren":insertedChildren
@@ -765,7 +767,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 		
 		this._validateRender(jqDom);
 		
-		this._cleanOrphans();
+		//this._cleanOrphans();
 		
 		return $(jqDom);
 		
@@ -1477,16 +1479,17 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 		// does not block the UI and extend the amount of time before the page updates are displayed
 		this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
 		var cleanUpTime = this._cleanUpChildren;
+
 		setTimeout(function() {
 			// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
 			if (cleanUpTime == self._cleanUpChildren) {
 				self.eachChildComponent(function(childComponent, sectionName, removeChild) {
-					if (childComponent.jqDom === null || !self.jqDom[0].contains(childComponent.jqDom[0])) {
+					if (childComponent._registeredDuringRender === true && (childComponent.jqDom === null || !self.jqDom[0].contains(childComponent.jqDom[0]))) {
 						removeChild();
 					}
 				});
 			}
-		},500);
+		},100);
 	}
 	
 	/*	Method: this.isReady
