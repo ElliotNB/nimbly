@@ -739,10 +739,9 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 			
 			// _renderFinalize was renamed to _afterRender on 10/21/2018 -- _renderFinalize is deprecated and will eventually be removed
 			if (typeof this._afterRender === "function") this._afterRender(jqDom);
-
+			
 		}
-
-
+		
 		return {
 			"elmt": jqDom
 			,"insertedChildren":insertedChildren
@@ -759,12 +758,14 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 	
 	*/
 	constructor.prototype._renderFromComp = function() {
-		
+
 		this._renderRunning = true;
 		var jqDom = this._render();
 		this._renderRunning = false;
 		
 		this._validateRender(jqDom);
+		
+		this._cleanOrphans();
 		
 		return $(jqDom);
 		
@@ -1034,7 +1035,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 							
 							// mark the child component as inserted into the parent so we know not to insert it into the parent again during successive re-renders
 							childComponent._insertedIntoParent = true;
-
+							
 						// else if there are multiple tags in the rendered component that match this child component's tag, then we need to throw an error
 						// if there are duplicate tags in the repeatable section that match this child component, then it's impossible to know which one is the right one
 						// to insert the child component
@@ -1058,7 +1059,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 				} else {
 					repeatSection.replaceWith(sectionContent);
 				}
-
+				
 			// else if we found more than one tag that matches the repeatable section, that's a problem. you should never have a template
 			// that has two repeatable sections with the same tag name because we wouldn't know which one is the right place to populate the repeatable section
 			} else if (repeatSection.length > 1) {
@@ -1231,25 +1232,6 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 
 				}
 
-				// since we've just refreshed our component, it's possible that our component could have instantiated
-				// new child components in its .render() method. if that has happened, then we need to see if those components
-				// are now part of our component's DOM or if they are just sitting orphaned in the virtual DOM. If they are orphaned
-				// and not in use, then we need to clean them up. that's what we do here. we execute it on a delayed settimeout so the clean-up
-				// does not block the UI and extend the amount of time before the page updates are displayed
-  			 	this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
-				var cleanUpTime = this._cleanUpChildren;
-				setTimeout(function() {
-					// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
-					if (cleanUpTime == self._cleanUpChildren) {
-						self.eachChildComponent(function(childComponent, sectionName, removeChild) {
-							// if the child component wasn't rendered or if it was rendered but is no longer contained within the parent component
-							// then we need to destroy it to reduce memory usage
-							if (childComponent.jqDom === null || !self.jqDom[0].contains(childComponent.jqDom[0])) {
-								removeChild();
-							}
-						});
-					}
-				},500);
 			}
 		}
 	};
@@ -1440,7 +1422,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 		if (i > -1) {
 			monitoredInsertion.splice(i,1);
 		}
-		
+
 		// Remove our data proxy from the ObservableSlim singleton. No further modifications to this.data will refreshes or fetches.
 		ObservableSlim.remove(this.data);
 
@@ -1475,6 +1457,40 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 
 	};
 
+	/*	Method: this._cleanOrphans
+			When a component refreshes/re-renders and it contains child components that are registered during the render process, then
+			those components may be replaced by new components. The old orphaned components should be cleaned up because they're no longer
+			in the DOM of the parent component -- replaced by newer components.
+
+		Returns:
+			Nothing.
+
+	*/
+	constructor.prototype._cleanOrphans = function() {
+		
+		var self = this;
+		
+		// since we've just refreshed our component, it's possible that our component could have instantiated
+		// new child components in its .render() method. if that has happened, then we need to see if those components
+		// are now part of our component's DOM or if they are just sitting orphaned in the virtual DOM. If they are orphaned
+		// and not in use, then we need to clean them up. that's what we do here. we execute it on a delayed settimeout so the clean-up
+		// does not block the UI and extend the amount of time before the page updates are displayed
+		this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
+		var cleanUpTime = this._cleanUpChildren;
+		var child = 0;
+		var contains = 0;
+		setTimeout(function() {
+			// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
+			if (cleanUpTime == self._cleanUpChildren) {
+				self.eachChildComponent(function(childComponent, sectionName, removeChild) {
+					if (childComponent.jqDom === null || !self.jqDom[0].contains(childComponent.jqDom[0])) {
+						removeChild();
+					}
+				});
+			}
+		},100);
+	}
+	
 	/*	Method: this.isReady
 			This method is used to determine if the component is both initialized and no longer procesing any display updates or fetch methods (e.g., ajax requests).
 
