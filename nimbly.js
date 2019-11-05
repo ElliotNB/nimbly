@@ -1,6 +1,6 @@
 /*
  * 	Nimbly
- *	Version 0.1.1
+ *	Version 0.1.2
  * 	https://github.com/elliotnb/nimbly
  *
  * 	Licensed under the MIT license:
@@ -1488,7 +1488,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 					}
 				});
 			}
-		},100);
+		},500);
 	}
 	
 	/*	Method: this.isReady
