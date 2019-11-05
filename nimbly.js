@@ -1477,8 +1477,6 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 		// does not block the UI and extend the amount of time before the page updates are displayed
 		this._cleanUpChildren = Math.floor(Math.random() * 1000000000);
 		var cleanUpTime = this._cleanUpChildren;
-		var child = 0;
-		var contains = 0;
 		setTimeout(function() {
 			// only execute the last setTimeout clean-ups, prevent multiple successive clean ups triggered by rapid refreshes
 			if (cleanUpTime == self._cleanUpChildren) {
