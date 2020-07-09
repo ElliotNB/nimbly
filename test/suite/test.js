@@ -140,7 +140,8 @@ describe('HelloWorld component test suite.', function() {
 		expect(helloWorld.jqDom.find(".list-item-test").length).to.equal(4);
 	});
 	
-	it('Simulated  _afterInDocument handler.', (done) => {		
+	it('Simulated  _afterInDocument handler.', (done) => {
+		helloWorld._afterInDocument();
 		setTimeout(() => {
 			expect(helloWorld.data.in_document).to.equal(true);
 			done();
