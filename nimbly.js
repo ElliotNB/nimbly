@@ -681,15 +681,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 				
 				// if this is the first time the component has been rendered, then add this component to the insertion monitoring list
 				if (this._initRendered === false) {
-					if (typeof this._afterInDocument === "function" && monitoredInsertion.indexOf(this) === -1) monitoredInsertion.push(this);
-					
-					// check if this component has any child components (or nested child components) with the _afterInDocument lifecycle method defined
-					this.eachChildComponent(function(childComponent) {
-						if (typeof childComponent._afterInDocument === "function" && monitoredInsertion.indexOf(childComponent) === -1) {
-							monitoredInsertion.push(childComponent);
-						}
-					}, true);
-					
+					self._monitorInsertion(this);
 				}
 				
 				// the component has now been fully rendered, so mark the initial render boolean as true
@@ -783,6 +775,35 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 		
 		return $(jqDom);
 	
+	};
+	
+	/*	Method: this._monitorInsertion
+		
+		This method is invoked to add a component to the array of components (monitoredInsertions) that are monitored for insertion into the DOM.
+		When the components are inserted into the DOM, the framework will invoke their `_afterInDocument` lifecycle method.
+	
+	*/
+	constructor.prototype._monitorInsertion = function(component) {
+		
+		var self = this;
+		
+		// only monitor the component for insertion into the DOM if it has the _afterInDocument lifecycle method defined and if it
+		// hasn't already been added to the monitoredInsertion queue and isn't already in the document
+		if (typeof component._afterInDocument === "function" 
+			&& monitoredInsertion.indexOf(component) === -1 
+			&& (component.jqDom === null || !document.body.contains(component.jqDom[0]))
+			
+		) {
+			
+			monitoredInsertion.push(component);
+		
+		}
+		
+		// check if this component has any child components (or nested child components) with the _afterInDocument lifecycle method defined
+		component.eachChildComponent(function(childComponent) {
+			self._monitorInsertion(childComponent);
+		}, true);
+		
 	};
 	
 	constructor.prototype._validateRender = function(jqDom) {
@@ -1028,6 +1049,10 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 								comp:childComponent
 								,elmt:renderResult.elmt
 							});
+							
+							// if the childComponent has a "_afterInDocument" method defined, then we'll need to add that component
+							// to our monitoredInsertion list so that "_afterInDocument" gets invoked when the child lands in the DOM
+							this._monitorInsertion(childComponent);
 
 							insertedChildren.push.apply(insertedChildren, renderResult.insertedChildren);
 
@@ -1221,14 +1246,7 @@ var Nimbly = function($, ObservableSlim, MutationObserver, HTMLElement, HTMLUnkn
 					// _postRefresh was renamed to _afterRefresh on 10/21/2018 -- _postRefresh is deprecated and will eventually be removed
 					if (typeof this._afterRefresh === "function") this._afterRefresh(true, jqOldComponent);
 					
-					if (typeof this._afterInDocument === "function") monitoredInsertion.push(this);
-					
-					// check if this component has any child components (or nested child components) with the _afterInDocument lifecycle method defined
-					this.eachChildComponent(function(childComponent) {
-						if (typeof childComponent._afterInDocument === "function" && monitoredInsertion.indexOf(childComponent) === -1) {
-							monitoredInsertion.push(childComponent);
-						}
-					}, true);
+					self._monitorInsertion(this);
 
 				}
 
